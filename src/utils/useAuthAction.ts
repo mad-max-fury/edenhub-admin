@@ -15,7 +15,7 @@ export default function useAuthAction() {
       Cookies.remove(key);
     });
 
-    navigate(AuthRouteConfig.HOME, { replace: true });
+    navigate(AuthRouteConfig.LOGIN, { replace: true });
     dispatch(baseApi.util.resetApiState());
 
     if (callback) {

@@ -68,12 +68,12 @@ export const axiosBaseQuery =
           Cookies.remove(key);
         });
 
-        window.location.href = AuthRouteConfig.HOME;
+        window.location.href = AuthRouteConfig.LOGIN;
       }
 
-      if (err.response?.status === 403) {
-        window.location.href = AuthRouteConfig.NO_ACCESS;
-      }
+      // if (err.response?.status === 403) {
+      //   window.location.href = AuthRouteConfig.NO_ACCESS;
+      // }
 
       return {
         error: {
