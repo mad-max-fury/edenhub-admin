@@ -127,6 +127,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-1 space-y-0">
+        {/* Carditems */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {cardData.map((card, idx) => (
           <Card
@@ -139,7 +140,7 @@ const Dashboard = () => {
           />
         ))}
       </div>
-
+         {/* Chart-menue */}
       <div className="flex flex-col md:flex-row justify-between gap-4 w-full">
         <div className="flex-[2] bg-white p-4 flex flex-col gap-4 w-full">
           <div className="flex w-auto flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -177,7 +178,7 @@ const Dashboard = () => {
               <ChevronDownIcon className="w-4 h-4 font-bold text-gray-600" />
             </div>
           </div>
-
+          {/* Top-sellers */}
           <div className="flex flex-col relative">
             {repeatedSellers.map((seller, idx) => (
               <div key={idx} className="relative">
@@ -192,7 +193,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
+      {/* Table content */}
       <div className="">
         <TMTable<DashboardRow>
           title="Recent Order"
