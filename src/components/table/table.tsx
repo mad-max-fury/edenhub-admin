@@ -12,7 +12,8 @@ import { cn } from "@/utils/helpers";
 import { InfiniteProgressBar } from "../infiniteProgressBar/infiniteProgressBar";
 import { PaginationElement } from "../pagination/pagination";
 import { Typography } from "../typography";
-import { EmptyStateIcon, SearchErrorIcon } from "@/assets/svgs";
+import { EmptyStateIcon, HamburgerIcon, SearchErrorIcon, SearchIcon } from "@/assets/svgs";
+import { Button } from "@/components/buttons/button";
 
 interface TMTableProps<T> {
   columns: ColumnDef<T>[];
@@ -35,6 +36,7 @@ interface TMTableProps<T> {
   customEmptyStateMessage?: string;
   noBottomSpace?: boolean;
   className?: string;
+  headerClassName?: string;
 }
 
 export function TMTable<T>({
@@ -54,6 +56,7 @@ export function TMTable<T>({
   customEmptyStateMessage,
   noBottomSpace,
   className,
+  headerClassName,
 }: TMTableProps<T>) {
   const table = useReactTable({
     data,
@@ -74,15 +77,21 @@ export function TMTable<T>({
   const showPagination = totalCount > pageSize;
 
   return (
-    <div className={cn("rounded-lg border border-N40", className)}>
+    <div className={cn(" border border-N40", className)}>
       {headerData}
 
       {title && (
-        <div className="flex items-center justify-between border-b border-N40 px-6 py-5">
+        <div className="flex items-center justify-between  border-N40 px-1 py-5">
           <Typography variant="h-m" fontWeight="bold">
             {title}
           </Typography>
           {additionalTitleData}
+          <div className="flex items-center justify-center gap-4">
+            <Button variant="secondary" shape="rounded" types="outline"><SearchIcon/></Button>
+            <Button variant="secondary" shape="rounded" types="outline"><HamburgerIcon/></Button>
+            <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
+            <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
+          </div>
         </div>
       )}
 
@@ -91,9 +100,9 @@ export function TMTable<T>({
 
         <div className={noBottomSpace ? "" : "overflow-x-auto"}>
           <table className="w-full border-collapse">
-            <thead>
+            <thead >
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b bg-N0">
+                <tr key={headerGroup.id} className={cn(headerClassName)}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
