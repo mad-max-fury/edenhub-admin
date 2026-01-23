@@ -12,8 +12,11 @@ import { cn } from "@/utils/helpers";
 import { InfiniteProgressBar } from "../infiniteProgressBar/infiniteProgressBar";
 import { PaginationElement } from "../pagination/pagination";
 import { Typography } from "../typography";
-import { EmptyStateIcon, HamburgerIcon, SearchErrorIcon, SearchIcon } from "@/assets/svgs";
+import { EmptyStateIcon,  SearchErrorIcon} from "@/assets/svgs";
 import { Button } from "@/components/buttons/button";
+import { SortIcon} from "@/assets/svgs"
+
+import { SearchInput } from "../search";
 
 interface TMTableProps<T> {
   columns: ColumnDef<T>[];
@@ -87,10 +90,17 @@ export function TMTable<T>({
           </Typography>
           {additionalTitleData}
           <div className="flex items-center justify-center gap-4">
-            <Button variant="secondary" shape="rounded" types="outline"><SearchIcon/></Button>
-            <Button variant="secondary" shape="rounded" types="outline"><HamburgerIcon/></Button>
-            <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
-            <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
+            <div>
+              
+              <SearchInput
+              width={60}
+              placeholder={false}
+              />
+            </div>
+            
+            <Button variant="secondary" shape="rounded" types="outline"><SortIcon/> </Button>
+            
+            
           </div>
         </div>
       )}
