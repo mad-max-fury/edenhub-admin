@@ -14,6 +14,7 @@ import { PaginationElement } from "../pagination/pagination";
 import { Typography } from "../typography";
 import { EmptyStateIcon,  SearchErrorIcon} from "@/assets/svgs";
 import { Button } from "@/components/buttons/button";
+import { SortIcon} from "@/assets/svgs"
 
 import { SearchInput } from "../search";
 
@@ -97,7 +98,7 @@ export function TMTable<T>({
               />
             </div>
             
-            <Button variant="secondary" shape="rounded" types="outline"> </Button>
+            <Button variant="secondary" shape="rounded" types="outline"><SortIcon/> </Button>
             
             
           </div>
