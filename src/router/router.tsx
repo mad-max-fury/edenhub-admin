@@ -3,6 +3,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 
 import NotFound from "@/pages/notFound/NotFound";
 import { PageLoader } from "@/components";
+import order from "@/pages/admin/orders/order";
 
 const AdminLayout = lazy(() => import("@/pages/admin/layout"));
 const LoginPage = lazy(() => import("@/pages/auth/login/Login"));
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
       { path: "orders", element: withSuspense(Orders) },
       { path: "customers", element: withSuspense(Customers) },
       { path: "settings", element: withSuspense(Settings) },
+      { path: "order", element: withSuspense(order) },
       { path: "*", element: <NotFound /> },
     ],
   },

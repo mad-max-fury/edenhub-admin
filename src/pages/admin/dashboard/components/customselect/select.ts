@@ -1,14 +1,14 @@
  import type { StylesConfig } from "react-select";
 
 
-export const selection: readonly selection[] = [
+export const selection: readonly Selection[] = [
     {label: "goat", value: "1"},
     {label: "cowt", value: "1"},
     {label: "hen", value: "2"},
     {label: "bird", value: "3"},
 ];
 
-export interface selection {
+export interface Selection {
   label: string;
   value: string | number;
 }
