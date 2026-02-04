@@ -2,16 +2,19 @@ import React, { useState } from "react";
 import Card from "@/components/Cards/Card";
 import Image from "../../../assets/images/watch6.jpg";
 import Select from 'react-select';
-import {  ChevronsUpDownIcon, FileIcon,  Square } from "lucide-react";
+
 import ImageWrapper from "@/components/imageLoader/ImageLoader";
-import {cardData, dashboardData, sellerData, } from "@/pages/admin/dashboard/components/constants/data"
+import {cardData, dashboardData, sellerData, } from "@/components/constants/data"
 import { Button } from "../../../components/buttons/button";
-import type { ColumnDef } from "@tanstack/react-table";
+import {  FileIcon} from "lucide-react";
 import { TMTable } from "@/components/table/table";
+import { dashboadColumns } from "@/components/constants/index";
 
-import type { SellerItemsProps } from "@/pages/admin/dashboard/components/constants/data";
+import type { SellerItemsProps } from "@/components/constants/data";
 import { selection, customStyle } from "@/pages/admin/dashboard/components/customselect/select";
+import { useNavigate } from "react-router-dom";
 
+import type { DashboardRow } from "@/components/constants/data";
 
 
 const SellerCard  = ({
@@ -51,111 +54,13 @@ const SellerCard  = ({
 };
 
 
-const dashboadColumns: ColumnDef<DashboardRow>[] = [
-  {
-    header: () => (
-      <div className="flex items-center gap-1">
-        <div><span><Square className="text-gray-200" /></span></div>
-        <p>Order</p>
-      </div>
-    ),
-    accessorKey: "order",
-    cell: ({row}) => (
-      <div className="flex items-center gap-2 ml-2 ">
-        <Square  className="text-gray-200" />
-        <span>{row.original.order}</span>
-      </div>
-    )
-  },
-  {
-    header: () => (
-      <div className="flex items-center gap-1">
-        <p>Date</p>
-        <div><span><ChevronsUpDownIcon size={16} /></span></div>
-      </div>
-    ),
-    accessorKey: "date",
-  },
-  { header: "Customer", accessorKey: "customer" },
-  {
-  header: "Payment",
-  accessorKey: "payment",
-  cell: ({ getValue }) => {
-    const value = getValue<string>();
+  
 
-    const isSuccess = value === "Success";
-
-    return (
-      <span
-        className={`px-7 py-4 border-4 ml-4 font-bold border-orange-300 rounded-2xl text-h-xs  ${
-          isSuccess
-            ? "bg-green-100 text-green-700"
-            : "bg-gray-50 text-orange-700"
-        }`}
-      >
-        <span
-        className={`w-2 h-2 rounded-full ${
-          isSuccess ? "bg-green-500" : "bg-orange-300"
-        }`}
-        />
-        {value}
-      </span>
-    );
-  },
-},
-
-  { header: "Total", accessorKey: "total" },
-  { header: "Items", accessorKey: "items" },
-    {
-  header: "Fulfillment",
-  accessorKey: "fulfillment",
-  cell: ({ getValue }) => {
-    const value = getValue<string>();
-
-    const isSuccess = value === "Success";
-
-    return (
-      <span
-        className={`px-7 py-4 border-4 ml-4 font-bold border-red-600 rounded-2xl text-h-xs  ${
-          isSuccess
-            ? "bg-green-100 text-green-700"
-            : "bg-gray-50 text-red-700"
-        }`}
-      >
-        <span
-        className={`w-2 h-2 rounded-full ${
-          isSuccess ? "bg-green-500" : "bg-orange-300"
-        }`}
-        />
-        {value}
-      </span>
-    );
-  },
-},
-  {
-    header: "Action",
-    id: "action",
-    cell: ({ row }) => (
-      <div>
-        <Button variant="secondary" shape="rounded" types="outline" onClick={() => alert(`Viewing order ${row.original.order}`)}>View Order</Button>
-      </div>
-    )
-  },
-];
-
-type DashboardRow = {
-  order: string;
-  date: string;
-  customer: string;
-  payment: string;
-  total: string;
-  items: number;
-  fulfillment: string;
-};
 
 
 
 const Dashboard = () => {
+  const navigate = useNavigate();
    const [selected, setSelected] = useState(null);
   const repeatCount = 5;
   const repeatedSellers = Array.from({ length: repeatCount }, () => sellerData[0]);
@@ -245,7 +150,7 @@ const Dashboard = () => {
       <div className="">
         <TMTable<DashboardRow>
           title="Recent Order"
-          columns={dashboadColumns}
+          columns={dashboadColumns(navigate)}
           data={dashboardData}
           loading={false}
           className="bg-white mt-6  px-6 "
