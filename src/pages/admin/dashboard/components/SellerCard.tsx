@@ -4,7 +4,7 @@ import { Typography } from "@/components/typography";
 
 
 
-type SellerCardProps = {
+type SellerItemsProps = {
   name: string;
   product: string;
   rate: number;
@@ -19,7 +19,7 @@ export default function SellerCard({
   rate,
   image,
   isUp = true,
-}: SellerCardProps) {
+}: SellerItemsProps) {
   const isLow = rate < 15;
   const rateColor = isLow ? "text-R500" : "text-G500";
   
