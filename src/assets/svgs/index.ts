@@ -55,11 +55,18 @@ import OrdersIcon from "./ordersIcon.svg?react";
 import ProductsIcon from "./productsIcon.svg?react";
 import CustomersIcon from "./customersIcon.svg?react";
 import SettingsIcon from "./settingsIcon.svg?react";
-import SortIcon from "./sort.svg?react"
-import UserIconOpen from "./userIconOpen.svg?react"
-import EmailIcon from "./emailIcon.svg?react"
-import ContactIconphone from "./contactIconphone.svg?react"
+import SortIcon from "./sort.svg?react";
+import UserIconOpen from "./userIconOpen.svg?react";
+import EmailIcon from "./emailIcon.svg?react";
+import ContactIconphone from "./contactIconphone.svg?react";
+import ConversionRateIcon from "./conversionRate.svg?react";
+import ActiveVisitorsIcon from "./activeVisitors.svg?react";
+import ActiveUserPerMin from "./visitorsPerDay.svg?react";
+
 export {
+  ActiveUserPerMin,
+  ActiveVisitorsIcon,
+  ConversionRateIcon,
   HamburgerIcon,
   AngleLeft,
   AngleRight,

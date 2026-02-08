@@ -1,162 +1,115 @@
-import React, { useState } from "react";
+import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Select from "react-select";
+
+import { Button, Typography } from "@/components";
 import Card from "@/components/Cards/Card";
-import Image from "../../../assets/images/watch6.jpg";
-import Select from 'react-select';
-
-import ImageWrapper from "@/components/imageLoader/ImageLoader";
-import {cardData, dashboardData, sellerData, } from "@/components/constants/data"
-import { Button } from "../../../components/buttons/button";
-import {  FileIcon} from "lucide-react";
 import { TMTable } from "@/components/table/table";
-import { dashboadColumns } from "@/components/constants/index";
+import SellerCard from "./components/SellerCard";
+import SalesChart from "./components/salesReport/SalesReport";
 
-import type { SellerItemsProps } from "@/components/constants/data";
-import { selection, customStyle } from "@/pages/admin/dashboard/components/customselect/select";
-import { useNavigate } from "react-router-dom";
+import {
+  cardData,
+  dashboardData,
+  SALES_CHART_DATA_MAP,
+  sellerData,
+} from "@/components/constants/data";
+import { dashboadColumns } from "@/components/constants/index";
+import {
+  selection,
+  customStyle,
+} from "@/pages/admin/dashboard/components/customselect/select";
+import { watch } from "@/assets/images";
 
 import type { DashboardRow } from "@/components/constants/data";
-
-
-const SellerCard  = ({
-  name,
-  product,
-  rate,
-  isUp,
-}: SellerItemsProps) => {
-  return (
-    <div className="flex items-center gap-6">
-
-      
-      <ImageWrapper
-        src={Image}
-        alt={name}
-        width={60}
-        height={60}
-        className=""
-      />
-
-      
-      <div className="flex-1">
-        <p className="font-semibold">{name}</p>
-        <p className="text-sm text-gray-500">{product}</p>
-      </div>
-
-      
-      <span
-        className={`text-sm font-bold ${
-          isUp ? "text-green-600" : "text-red-600"
-        }`}
-      >
-        {isUp ? "↑" : "↓"} {rate}%
-      </span>
-    </div>
-  );
-};
-
-
-  
-
-
-
+import type { Selection } from "@/pages/admin/dashboard/components/customselect/select";
+import { AuthRouteConfig } from "@/constants/routes";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-   const [selected, setSelected] = useState(null);
-  const repeatCount = 5;
-  const repeatedSellers = Array.from({ length: repeatCount }, () => sellerData[0]);
+  const [topSellerFilter, setTopSellerFilter] = useState<Selection | null>(
+    null,
+  );
+  const [chartPeriod, setChartPeriod] = useState("12 Months");
+  const activeChartData = useMemo(() => {
+    return (
+      SALES_CHART_DATA_MAP[chartPeriod] || SALES_CHART_DATA_MAP["12 Months"]
+    );
+  }, [chartPeriod]);
+
+  const sellers = useMemo(() => Array(5).fill(sellerData[0]), []);
+
+  const handleExport = () => {
+    console.log(`Exporting ${chartPeriod} Report...`);
+  };
 
   return (
-    <div className="">
-        {/* Carditems */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="flex flex-col gap-9 p-1">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {cardData.map((card, idx) => (
-          <Card
-            key={idx}
-            title={card.title}
-            price={card.price}
-            rate={card.rate}
-            isCurrency={card.isCurrency}
-            isUp={card.isUp}
-          />
+          <Card key={`${card.title}-${idx}`} {...card} />
         ))}
-      </div>
-         {/* Chart-menue */}
-      <div className="flex flex-col pt-9 md:flex-row justify-between gap-4 w-full">
-        <div className="flex-[2] bg-white p-4 flex flex-col  gap-4 w-full">
-          <div className="flex w-auto flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="">
-              <h1 className="font-bold text-lg">Sales Report</h1>
-            </div>
-            <div className="flex flex-wrap gap-2 ">
-              
-              
-              <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
-              <Button variant="plain" shape="rounded" types="filled" className="text-black">6 Months</Button>
-              <Button variant="plain" shape="rounded" types="filled" className="text-black">30 Days</Button>
-              <Button variant="plain" shape="rounded" types="filled" className="text-black">7 Days</Button>
-            </div>
-            <div className="">
-              <Button
-                asChild
-                variant="secondary"
-                shape="rounded"
-                types="outline"
-                className="flex items-center gap-2"
-              >
-                <div className="flex items-center gap-2">
-                  <FileIcon className="w-5 h-5 text-gray-600" />
-                  Export PDF
-                </div>
-              </Button>
-            </div>
-          </div>
+      </section>
+
+      <section className="flex flex-col md:flex-row gap-4 w-full ">
+        <div className="flex-[2]  h-[350px] bg-white border border-gray-200 p-4 ">
+          <SalesChart
+            data={activeChartData}
+            title="Sales Report"
+            activePeriod={chartPeriod}
+            onPeriodChange={setChartPeriod}
+            onExport={handleExport}
+          />
         </div>
 
-        <div className="flex-[1] border border-[#E4E4E7] flex flex-col">
-          <div className="px-4 py-2 font-bold text-lg bg-white flex items-center justify-between">
-            <h1 className="font-clash font-semibold text-[14px] leading-[20.49px] tracking-[0px]">Top Seller</h1>
-            <div className="flex items-center justify-center gap-2">
-              
-
+        <aside className="flex-1  h-auto md:h-[350px] md:max-w-[349px] bg-white border border-gray-200  flex flex-col overflow-hidden">
+          <div className="px-5 py-4 flex items-center justify-between shrink-0 border-b border-gray-50">
+            <Typography variant="h-s" fontWeight="bold">
+              Top Seller
+            </Typography>
+            <div className="w-32">
               <Select
-               options={selection}
-               value={selected} 
-               styles={customStyle} 
-               onChange={setSelected}
-               placeholder="last 7 Days"
-               
-               
+                options={selection}
+                value={topSellerFilter}
+                styles={customStyle}
+                onChange={setTopSellerFilter}
+                placeholder="7 Days"
               />
-               
-              
             </div>
           </div>
-          {/* Top-sellers */}
-          <div className="flex flex-col relative">
-            {repeatedSellers.map((seller, idx) => (
-              <div key={idx} className="relative p-6 bg-white">
-                <div className="bg-white px-4 py-2">
-                  <SellerCard  {...seller} />
-                </div>
-                {idx !== repeatedSellers.length - 1 && (
-                  <div className="border-b border-[#E4E4E7] absolute left-4 right-4 bottom-0" />
+
+          <div className="flex-1 overflow-y-auto px-5 py-2 custom-scrollbar">
+            {sellers.map((seller, idx) => (
+              <div key={idx}>
+                <SellerCard {...seller} image={watch} />
+                {idx !== sellers.length - 1 && (
+                  <hr className="my-3 border-gray-50" />
                 )}
               </div>
             ))}
           </div>
-        </div>
-      </div>
-      {/* Table content */}
-      <div className="">
+        </aside>
+      </section>
+
+      <section className="w-full">
         <TMTable<DashboardRow>
-          title="Recent Order"
           columns={dashboadColumns(navigate)}
           data={dashboardData}
+          headerData={
+            <div className="w-full items-center px-6 py-3 flex justify-between">
+              <Typography variant={"h-s"} fontWeight={"bold"}>
+                Recent Orders
+              </Typography>
+              <Link to={AuthRouteConfig.ORDERS}>
+                <Button size={"sm"}>View Orders</Button>
+              </Link>
+            </div>
+          }
           loading={false}
-          className="bg-white mt-6  px-6 "
-          headerClassName="bg-gray-50  text-white uppercase tracking-wide text-xs"
+          className="bg-white overflow-hidden"
+          headerClassName="bg-gray-50 text-gray-500 uppercase tracking-wider text-[10px] font-bold"
         />
-      </div>
+      </section>
     </div>
   );
 };

@@ -1,8 +1,5 @@
-import { ArrowUp, ArrowDown } from "lucide-react";
 import { Typography } from "@/components/typography";
-
-
-
+import ImageWrapper from "@/components/imageLoader/ImageLoader";
 
 type SellerItemsProps = {
   name: string;
@@ -12,59 +9,36 @@ type SellerItemsProps = {
   isUp?: boolean;
 };
 
-
-export default function SellerCard({
-  name,
-  product,
-  rate,
-  image,
-  isUp = true,
-}: SellerItemsProps) {
-  const isLow = rate < 15;
-  const rateColor = isLow ? "text-R500" : "text-G500";
-  
-
+const SellerCard = ({ name, product, rate, isUp, image }: SellerItemsProps) => {
   return (
-    <div className="flex items-center justify-center gap-4 bg-white  p-4 ">
-      
-      {/* Image */}
-      <img
-        src={image}
-        alt={name}
-        className="w-12 h-12  object-cover"
-      />
+    <div className="flex justify-between  gap-6 w-full">
+      <div className="flex gap-2">
+        <ImageWrapper
+          src={image}
+          alt={name}
+          width={32}
+          height={32}
+          className=""
+        />
 
-      {/* Info */}
-      <div className="flex-1 ">
-        <Typography
-          variant="c-s"
-          
-          fontWeight="bold"
-          color="gray-normal"
-        >
-          {name}
-        </Typography>
-
-        <Typography
-          variant="c-s"
-          
-          fontWeight="regular"
-          color="N500"
-          className="my-2"
-        >
-           {product}
-        </Typography>
+        <div className="flex-1">
+          <Typography variant={"p-m"} color={"text-default"}>
+            {name}
+          </Typography>
+          <Typography variant={"p-s"} color={"text-light"}>
+            {product}
+          </Typography>
+        </div>
       </div>
 
-      {/* Rate */}
-      <div className={`flex items-center font-bold ${rateColor}`}>
-        <span className="text-sm">+{rate}%</span>
-        {isUp ? (
-          <ArrowUp className="w-4 h-4 ml-1" />
-        ) : (
-          <ArrowDown className="w-4 h-4 ml-1" />
-        )}
-      </div>
+      <span
+        className={`text-sm font-medium ${isUp ? "text-G300" : "text-R300"}`}
+      >
+        {isUp ? "+" : "-"}
+        {rate}% {isUp ? "↑" : "↓"}
+      </span>
     </div>
   );
-}
+};
+
+export default SellerCard;

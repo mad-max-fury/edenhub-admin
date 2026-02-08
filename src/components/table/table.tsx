@@ -12,11 +12,9 @@ import { cn } from "@/utils/helpers";
 import { InfiniteProgressBar } from "../infiniteProgressBar/infiniteProgressBar";
 import { PaginationElement } from "../pagination/pagination";
 import { Typography } from "../typography";
-import { EmptyStateIcon,  SearchErrorIcon} from "@/assets/svgs";
+import { EmptyStateIcon, SearchErrorIcon } from "@/assets/svgs";
 import { Button } from "@/components/buttons/button";
-import { SortIcon} from "@/assets/svgs"
-
-import { SearchInput } from "../search";
+import { SortIcon } from "@/assets/svgs";
 
 interface TMTableProps<T> {
   columns: ColumnDef<T>[];
@@ -90,17 +88,9 @@ export function TMTable<T>({
           </Typography>
           {additionalTitleData}
           <div className="flex items-center justify-center gap-4">
-            <div>
-              
-              <SearchInput
-              width={60}
-              placeholder={false}
-              />
-            </div>
-            
-            <Button variant="secondary" shape="rounded" types="outline"><SortIcon/> </Button>
-            
-            
+            <Button variant="secondary" shape="rounded" types="outline">
+              <SortIcon />{" "}
+            </Button>
           </div>
         </div>
       )}
@@ -110,7 +100,7 @@ export function TMTable<T>({
 
         <div className={noBottomSpace ? "" : "overflow-x-auto"}>
           <table className="w-full border-collapse">
-            <thead >
+            <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={cn(headerClassName)}>
                   {headerGroup.headers.map((header) => (
@@ -120,7 +110,7 @@ export function TMTable<T>({
                     >
                       {flexRender(
                         header.column.columnDef.header,
-                        header.getContext()
+                        header.getContext(),
                       )}
                     </th>
                   ))}
@@ -143,7 +133,7 @@ export function TMTable<T>({
                       <td key={cell.id} className="px-4 py-3 text-sm text-N900">
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </td>
                     ))}

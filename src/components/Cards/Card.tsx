@@ -1,8 +1,7 @@
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { Typography } from "../../components/typography";
-import React from "react";
-import type { ReactNode } from "react";
 
+import type { ReactNode } from "react";
 
 type CardProps = {
   title?: string;
@@ -11,7 +10,7 @@ type CardProps = {
   isCurrency?: boolean;
   isUp?: boolean;
   className?: string;
-  children?: ReactNode; 
+  children?: ReactNode;
 };
 
 export default function Card({
@@ -23,47 +22,40 @@ export default function Card({
   className = "",
   children,
 }: CardProps) {
-  // Determine rate color
-  const rateColor = rate < 15 ? "R500" : "G500";
+  const rateColor = rate < 15 ? "R300" : "G300";
 
-  // If children are provided, render them instead of the default card
   if (children) {
     return (
       <div
-        className={`bg-white border-[0.94px] border-[#E4E4E7] p-6 flex flex-col w-full justify-between font-clashDisplay ${className}`}
+        className={`bg-white border-[0.94px] border-gray-200 p-[14px] flex flex-col w-full justify-between font-clashDisplay ${className}`}
       >
         {children}
       </div>
     );
   }
 
-  // Default metric card
   return (
     <div
-      className={`bg-white border-[0.94px] border-[#E4E4E7] p-6 flex flex-col w-full justify-between font-clashDisplay ${className}`}
+      className={`bg-white border-[0.94px] border-gray-200 p-[14px_24px] gap-4 flex flex-col w-full justify-between font-clashDisplay ${className}`}
     >
-      {/* Title */}
       {title && (
         <Typography
           variant="c-s"
           fontWeight="regular"
-          color="gray-normal"
+          color="G500"
           className="mb-2 uppercase"
         >
           {title}
         </Typography>
       )}
 
-      {/* Price and Rate */}
       <div className="flex items-center justify-between">
-        {/* Price */}
         {price !== undefined && (
-          <Typography variant="c-l" fontWeight="bold" color="gray-normal">
+          <Typography variant="c-l" fontWeight="bold" color={"text-default"}>
             {isCurrency ? `$${price}` : price}
           </Typography>
         )}
 
-        {/* Rate */}
         {rate !== undefined && (
           <div className="flex items-center text-[inherit]">
             <Typography
@@ -75,9 +67,9 @@ export default function Card({
               +{rate}%
             </Typography>
             {isUp ? (
-              <ArrowUp className={`w-4 h-4 ml-1 ${rateColor}`} />
+              <ArrowUp className={`w-4 h-4 ml-1 text-${rateColor}`} />
             ) : (
-              <ArrowDown className={`w-4 h-4 ml-1 ${rateColor}`} />
+              <ArrowDown className={`w-4 h-4 ml-1 text-${rateColor}`} />
             )}
           </div>
         )}
