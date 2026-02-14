@@ -51,14 +51,14 @@ const statusToVariant: Record<
   failed: "red",
   refunded: "red",
   "awaiting payment": "yellow",
-
+  "not subscribed": "red",
+  subscribed: "green",
   shipped: "blue",
   delivered: "green",
   unfulfilled: "purple",
   processing: "purple",
   "in progress": "blue",
   "partially fulfilled": "teal",
-
   active: "green",
   cancelled: "red",
   draft: "gray",

@@ -19,7 +19,7 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
       danger:
         "bg-R400 hover:bg-R300 text-N0 disabled:bg-R75 disabled:text-N20 disabled:cursor-not-allowed", // red
       blue: "bg-B400 hover:bg-B300 text-N0 disabled:bg-B75 disabled:text-N70 disabled:cursor-not-allowed", // blue
-      gold: "bg-card hover:bg-LB400 text-N0 disabled:bg-LB75 disabled:text-N20 disabled:cursor-not-allowed", // brown
+      gold: "bg-LB300 hover:bg-LB400 text-N0 disabled:bg-LB75 disabled:text-N20 disabled:cursor-not-allowed", // brown
       "brown-light":
         "bg-BR400 hover:bg-BR300 text-N0 disabled:bg-BR75 disabled:text-N20 disabled:cursor-not-allowed", // brown light
       plain:

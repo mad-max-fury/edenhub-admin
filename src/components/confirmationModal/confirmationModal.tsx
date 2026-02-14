@@ -2,15 +2,17 @@ import React from "react";
 
 import { Button } from "../buttons";
 import { Modal } from "../modal/modal";
+import { Typography } from "../typography";
 
+export type IType = "delete" | "confirm" | "warning";
 interface IConfirmationProps {
   isOpen: boolean;
   closeModal: () => void;
   formTitle: string;
-  message: React.ReactElement;
+  message: React.ReactElement | string;
   buttonLabel: string;
   handleClick: () => void;
-  type: "delete" | "confirm";
+  type: IType;
   isLoading: boolean;
 }
 export const ConfirmationModal = ({
@@ -29,10 +31,18 @@ export const ConfirmationModal = ({
         isOpen={isOpen}
         onClose={closeModal}
         title={formTitle}
-        mobileLayoutType="normal"
+        mobileLayoutType="drawer"
       >
         <div className="flex h-full flex-col justify-between">
-          <div className="p-6">{message}</div>
+          {typeof message === "string" ? (
+            <div className="p-6">
+              <Typography variant="p-m" color="N700">
+                {message}
+              </Typography>
+            </div>
+          ) : (
+            <div className="p-6">{message}</div>
+          )}
           <div className="flex justify-end gap-2 border-t border-solid border-N40 bg-N0 px-6 py-4">
             <Button
               variant={"secondary"}
@@ -43,7 +53,13 @@ export const ConfirmationModal = ({
               Cancel
             </Button>
             <Button
-              variant={type === "delete" ? "danger" : "primary"}
+              variant={
+                type === "delete"
+                  ? "danger"
+                  : type === "warning"
+                    ? "gold"
+                    : "primary"
+              }
               className="msm:w-full"
               onClick={handleClick}
               loading={isLoading}

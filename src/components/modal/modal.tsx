@@ -1,3 +1,5 @@
+"use client";
+
 import * as Dialog from "@radix-ui/react-dialog";
 import { X as CloseIcon } from "lucide-react";
 import { cn } from "@/utils/helpers";
@@ -10,7 +12,8 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   footerData?: React.ReactNode;
-  mobileLayoutType: "full" | "normal";
+  mobileLayoutType: "full" | "normal" | "drawer";
+  className?: string;
 }
 
 export function Modal({
@@ -20,34 +23,65 @@ export function Modal({
   children,
   footerData,
   mobileLayoutType,
+  className,
 }: ModalProps) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[99] bg-[#091E428A] data-[state=open]:animate-fadeIn" />
+        {/* Overlay with a blur effect for premium feel */}
+        <Dialog.Overlay className="fixed inset-0 z-[99] bg-[#091E428A] backdrop-blur-[2px] data-[state=open]:animate-fadeIn" />
 
         <Dialog.Content
           className={cn(
-            "fixed left-1/2 top-1/2 z-[100] w-full max-w-[744px] -translate-x-1/2 -translate-y-1/2 bg-N0 shadow-xl",
-            "data-[state=open]:animate-scaleIn",
-            mobileLayoutType === "normal" ? "rounded-md" : "h-screen"
+            "fixed left-1/2 top-1/2 z-[100] w-[95%] max-w-[744px] -translate-x-1/2 -translate-y-1/2 bg-N0 shadow-2xl transition-all duration-300",
+            "data-[state=open]:animate-scaleIn focus:outline-none",
+
+            mobileLayoutType === "normal" && "rounded-xl",
+            mobileLayoutType === "full" &&
+              "h-screen w-screen sm:h-auto sm:w-[95%] sm:rounded-xl",
+
+            mobileLayoutType === "drawer" && [
+              "max-w-sm:!top-[unset] max-w-sm:!-translate-y-[unset] max-w-sm:bottom-0 max-w-sm:left-0 max-w-sm:translate-x-0 max-w-sm:translate-y-0",
+              "max-w-sm:w-full max-w-sm:max-w-none max-w-sm:rounded-t-[24px] max-w-sm:rounded-b-none",
+              "max-w-sm:animate-slideUp",
+            ],
+            className,
           )}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-N40 px-6 py-4">
-            <Typography variant="p-l">{title}</Typography>
+          {mobileLayoutType === "drawer" && (
+            <div
+              onClick={onClose}
+              className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-N40 sm:hidden"
+            />
+          )}
 
-            <Dialog.Close asChild>
-              <Button variant="plain" size="plain">
-                <CloseIcon />
-              </Button>
-            </Dialog.Close>
+          {title && (
+            <div className="flex items-center justify-between border-b border-N40 px-6 py-4">
+              <Typography variant="p-l" fontWeight="bold">
+                {title}
+              </Typography>
+
+              <Dialog.Close asChild>
+                <Button
+                  variant="plain"
+                  size="plain"
+                  className="hover:bg-N20 rounded-full p-1"
+                >
+                  <CloseIcon size={20} />
+                </Button>
+              </Dialog.Close>
+            </div>
+          )}
+
+          <div
+            className={cn(
+              "max-h-[80vh] overflow-y-auto custom-scrollbar",
+              !title && "pt-2",
+            )}
+          >
+            {children}
           </div>
 
-          {/* Body */}
-          <div className="max-h-[70vh] overflow-y-auto">{children}</div>
-
-          {/* Footer */}
           {footerData && (
             <div className="border-t border-N40 px-6 py-4">{footerData}</div>
           )}

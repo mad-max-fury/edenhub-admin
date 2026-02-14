@@ -5,6 +5,20 @@ import plugin from "tailwindcss/plugin";
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
+    keyframes: {
+      slideUp: {
+        "0%": { transform: "translateY(100%)" },
+        "100%": { transform: "translateY(0)" },
+      },
+      fadeIn: {
+        "0%": { opacity: "0" },
+        "100%": { opacity: "1" },
+      },
+    },
+    animation: {
+      slideUp: "slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+      fadeIn: "fadeIn 0.3s ease-out",
+    },
     screens: {
       xs: "320px",
       sm: "480px",
