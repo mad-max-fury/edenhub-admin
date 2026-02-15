@@ -22,7 +22,17 @@ const ProductDetails = lazy(
 const Orders = lazy(() => import("@/pages/admin/orders"));
 const Order = lazy(() => import("@/pages/admin/orders/order"));
 const Customers = lazy(() => import("@/pages/admin/customers"));
-const UserManagement = lazy(() => import("@/pages/admin/user-management"));
+const UserManagementLayout = lazy(
+  () => import("@/pages/admin/user-management"),
+);
+const Users = lazy(() => import("@/pages/admin/user-management/users"));
+const RolesManagement = lazy(
+  () => import("@/pages/admin/user-management/roles"),
+);
+const MenusManagement = lazy(
+  () => import("@/pages/admin/user-management/menus"),
+);
+
 const AuditTrail = lazy(() => import("@/pages/admin/audit"));
 const SettingsLayout = lazy(() => import("@/pages/admin/settings/layout"));
 const ProfileSettings = lazy(() => import("@/pages/admin/settings/profile"));
@@ -61,7 +71,22 @@ export const router = createBrowserRouter([
       { path: "orders", element: withSuspense(Orders) },
       { path: "orders/:id", element: withSuspense(Order) },
       { path: "customers", element: withSuspense(Customers) },
-      { path: "user-management", element: withSuspense(UserManagement) },
+      {
+        path: "user-management",
+        element: withSuspense(UserManagementLayout),
+        children: [
+          { index: true, element: <Navigate to="users" replace /> },
+          { path: "users", element: withSuspense(Users) },
+          {
+            path: "roles",
+            element: withSuspense(RolesManagement),
+          },
+          {
+            path: "menus",
+            element: withSuspense(MenusManagement),
+          },
+        ],
+      },
       { path: "audit-trail", element: withSuspense(AuditTrail) },
       {
         path: "settings",

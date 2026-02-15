@@ -6,7 +6,7 @@ import { Button, Typography } from "@/components";
 import { cn } from "@/utils/helpers";
 
 // Type Definitions
-type Tab = {
+export type ITab = {
   label: string;
   query: string;
   count?: number;
@@ -15,19 +15,19 @@ type Tab = {
 };
 
 type SideTabProps = {
-  tabs: Tab[];
+  tabs: ITab[];
   onChange: (query: string) => void;
   activeTab: string;
   title?: string;
 };
 
 type MobileTabHeaderProps = {
-  tabs: Tab[];
+  tabs: ITab[];
   activeTab: string;
   onChange: (query: string) => void;
 };
 
-type DropdownMenuItem = Partial<Tab> & {
+type DropdownMenuItem = Partial<ITab> & {
   onClick: () => void;
 };
 
