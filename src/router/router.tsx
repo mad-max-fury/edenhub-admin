@@ -61,8 +61,8 @@ export const router = createBrowserRouter([
       { path: "orders", element: withSuspense(Orders) },
       { path: "orders/:id", element: withSuspense(Order) },
       { path: "customers", element: withSuspense(Customers) },
-      { path: "User Managements", element: withSuspense(UserManagement) },
-      { path: "Audit Trail", element: withSuspense(AuditTrail) },
+      { path: "user-management", element: withSuspense(UserManagement) },
+      { path: "audit-trail", element: withSuspense(AuditTrail) },
       {
         path: "settings",
         element: withSuspense(SettingsLayout),

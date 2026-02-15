@@ -60,8 +60,13 @@ const statusToVariant: Record<
   "in progress": "blue",
   "partially fulfilled": "teal",
   active: "green",
+  archived: "yellow",
   cancelled: "red",
   draft: "gray",
+  drafted: "gray",
+  low: "blue",
+  medium: "yellow",
+  high: "red",
 };
 
 export interface BadgeProps

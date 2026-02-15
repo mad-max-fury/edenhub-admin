@@ -62,8 +62,12 @@ import ContactIconphone from "./contactIconphone.svg?react";
 import ConversionRateIcon from "./conversionRate.svg?react";
 import ActiveVisitorsIcon from "./activeVisitors.svg?react";
 import ActiveUserPerMin from "./visitorsPerDay.svg?react";
+import UserManagementIcon from "./userManagement.svg?react";
+import AuditTrailIcon from "./auditTrail.svg?react";
 
 export {
+  UserManagementIcon,
+  AuditTrailIcon,
   ActiveUserPerMin,
   ActiveVisitorsIcon,
   ConversionRateIcon,

@@ -1,3 +1,1 @@
-export * from "./sideTab";
-
-export * from "./tabUnderline";
+export * from "./tab";

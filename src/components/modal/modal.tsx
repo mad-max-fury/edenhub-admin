@@ -36,9 +36,9 @@ export function Modal({
             "fixed left-1/2 top-1/2 z-[100] w-[95%] max-w-[744px] -translate-x-1/2 -translate-y-1/2 bg-N0 shadow-2xl transition-all duration-300",
             "data-[state=open]:animate-scaleIn focus:outline-none",
 
-            mobileLayoutType === "normal" && "rounded-xl",
+            mobileLayoutType === "normal" && "",
             mobileLayoutType === "full" &&
-              "h-screen w-screen sm:h-auto sm:w-[95%] sm:rounded-xl",
+              "h-screen w-screen sm:h-auto sm:w-[95%] ",
 
             mobileLayoutType === "drawer" && [
               "max-w-sm:!top-[unset] max-w-sm:!-translate-y-[unset] max-w-sm:bottom-0 max-w-sm:left-0 max-w-sm:translate-x-0 max-w-sm:translate-y-0",
@@ -65,9 +65,9 @@ export function Modal({
                 <Button
                   variant="plain"
                   size="plain"
-                  className="hover:bg-N20 rounded-full p-1"
+                  className="hover:bg-N20  rounded-full p-1"
                 >
-                  <CloseIcon size={20} />
+                  <CloseIcon size={20} className="text-N600" />
                 </Button>
               </Dialog.Close>
             </div>

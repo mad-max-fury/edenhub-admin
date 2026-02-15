@@ -6,7 +6,7 @@ import { ProfileSchema, type IProfilePayload } from "./schema";
 
 const ProfileSettings = () => {
   const [profileImage, setProfileImage] = useState<string | null>(
-    "https://via.placeholder.com/150",
+    "https://i.pravatar.cc/150",
   );
 
   const {

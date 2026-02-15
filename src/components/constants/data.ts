@@ -1,5 +1,3 @@
-import WatchImage from "@/assets/images/Watch2.jpeg";
-
 export const cardData = [
   {
     title: "Today's Sales",
@@ -81,7 +79,7 @@ export const dashboardData: DashboardRow[] = [
         name: "Timeless Gold Royale",
         description: "Buckle Engraving, Dial Engraving, Back Case Engraving",
         packaging: "Classic Wooden Box",
-        image: WatchImage,
+        image: `https://i.pravatar.cc/150?p=1`,
       },
     ],
   },
@@ -98,14 +96,8 @@ export const dashboardData: DashboardRow[] = [
         name: "Smart Watch 6",
         description: "Heart Rate, GPS, Waterproof",
         packaging: "Premium Box",
-        image: WatchImage,
+        image: `https://i.pravatar.cc/150?p=2`,
       },
-      // {
-      //   name: "Leather Strap Classic",
-      //   description: "Brown Leather, Adjustable",
-      //   packaging: "Plastic Sleeve",
-      //   image: WatchImage,
-      // },
     ],
   },
   {
@@ -121,7 +113,7 @@ export const dashboardData: DashboardRow[] = [
         name: "Minimal Silver Watch",
         description: "Slim Dial, Stainless Steel",
         packaging: "Classic Wooden Box",
-        image: WatchImage,
+        image: `https://i.pravatar.cc/150?p=3`,
       },
     ],
   },
@@ -138,14 +130,8 @@ export const dashboardData: DashboardRow[] = [
         name: "Chrono Sport Pro",
         description: "Chronograph, Water Resistant",
         packaging: "Sport Box",
-        image: WatchImage,
+        image: `https://i.pravatar.cc/150?p=4`,
       },
-      // {
-      //   name: "Rubber Strap Black",
-      //   description: "Sweat Resistant",
-      //   packaging: "Plastic Sleeve",
-      //   image: WatchImage,
-      // },
     ],
   },
   {
@@ -161,7 +147,7 @@ export const dashboardData: DashboardRow[] = [
         name: "Rose Gold Elite",
         description: "Dial Engraving, Back Case Engraving",
         packaging: "Luxury Box",
-        image: WatchImage,
+        image: `https://i.pravatar.cc/150?p=5`,
       },
     ],
   },
@@ -178,7 +164,7 @@ export const dashboardData: DashboardRow[] = [
         name: "Ocean Blue Diver",
         description: "300m Water Resistant, Luminous Hands",
         packaging: "Waterproof Case",
-        image: WatchImage,
+        image: `https://i.pravatar.cc/150?p=6`,
       },
     ],
   },

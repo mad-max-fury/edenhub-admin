@@ -8,6 +8,8 @@ import {
   ProductsIcon,
   CustomersIcon,
   SettingsIcon,
+  AuditTrailIcon,
+  UserManagementIcon,
 } from "@/assets/svgs";
 import type { MenuItem } from "@/components/sidebar/SideBar";
 import Sidebar from "@/components/sidebar/SideBar";
@@ -51,6 +53,19 @@ const AdminLayout = () => {
       name: "Customers",
       icon: CustomersIcon,
       path: AuthRouteConfig.CUSTOMERS,
+      badge: null,
+    },
+
+    {
+      name: "User Management",
+      icon: UserManagementIcon,
+      path: AuthRouteConfig.USER_MANAGEMENT,
+      badge: null,
+    },
+    {
+      name: "Audit Trail",
+      icon: AuditTrailIcon,
+      path: AuthRouteConfig.AUDIT_TRAIL,
       badge: null,
     },
     {
