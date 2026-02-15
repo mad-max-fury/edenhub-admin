@@ -19,6 +19,8 @@ interface DrawerProps {
   header?: React.ReactNode;
   width?: string;
   className?: string;
+  bodyClassNames?: string;
+  rootClassName?: string;
 }
 
 export const Drawer: React.FC<DrawerProps> = ({
@@ -36,6 +38,8 @@ export const Drawer: React.FC<DrawerProps> = ({
   header,
   width = "256px",
   className,
+  bodyClassNames,
+  rootClassName,
 }) => {
   const portalRef = useRef<Element | null>(null);
 
@@ -64,7 +68,7 @@ export const Drawer: React.FC<DrawerProps> = ({
     <>
       {portalRef.current &&
         ReactDOM.createPortal(
-          <div className="app-drawer-root z-[1000]">
+          <div className={cn("app-drawer-root z-[1000]", rootClassName)}>
             <div
               onClick={handleClose}
               className={`fixed inset-0 z-50 bg-[#091E428A] transition-opacity duration-200 ${
@@ -87,7 +91,12 @@ export const Drawer: React.FC<DrawerProps> = ({
               style={{ maxWidth: width }}
             >
               {header && <div className="p-4">{header}</div>}
-              <div className="flex-1 flex-grow overflow-auto p-4 hideScrollBar">
+              <div
+                className={cn(
+                  "flex-1 flex-grow overflow-auto p-4 hideScrollBar",
+                  bodyClassNames,
+                )}
+              >
                 {children}
               </div>
               {isFooter && (
