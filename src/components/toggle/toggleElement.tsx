@@ -16,7 +16,7 @@ export function Toggle({ checked, onChange, label, disabled }: ToggleProps) {
         checked={checked}
         onCheckedChange={onChange}
         disabled={disabled}
-        className="relative h-6 w-11 rounded-full bg-gray-300 data-[state=checked]:bg-primary transition"
+        className="relative h-6 w-11 rounded-full bg-gray-300 data-[state=checked]:bg-BR400 transition"
       >
         <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white transition-transform data-[state=checked]:translate-x-5" />
       </Switch.Root>
