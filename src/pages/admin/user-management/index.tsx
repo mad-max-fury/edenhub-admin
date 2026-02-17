@@ -1,5 +1,5 @@
 import { Tab, type ITab } from "@/components";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Typography } from "@/components";
 import { AuthRouteConfig } from "@/constants/routes";

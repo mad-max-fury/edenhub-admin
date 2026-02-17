@@ -5,7 +5,12 @@ import type { DashboardRow } from "@/components/constants/data";
 import { Button } from "@/components";
 import { orderSummary } from "@/pages/admin/orders/components/constants/data";
 import Card from "@/components/Cards/Card";
-import { CartIcon, ContactIconphone, EmailIcon, UserIconOpen } from "@/assets/svgs";
+import {
+  CartIcon,
+  ContactIconphone,
+  EmailIcon,
+  UserIconOpen,
+} from "@/assets/svgs";
 import { useState } from "react";
 
 const Order = () => {
@@ -43,10 +48,10 @@ const Order = () => {
                 <h1 className="font-clashDisplay font-semibold text-2xl">
                   order items(s)
                 </h1>
-                <StatusBadge
+                {/* <StatusBadge
                   value={order.unfulfillment}
                   successValue="unFulfilled"
-                />
+                /> */}
               </div>
               <ChevronDownIcon
                 className={`w-6 h-6 cursor-pointer transition-transform duration-300 ${
@@ -66,12 +71,16 @@ const Order = () => {
                       className="w-30 h-40 object-cover"
                     />
                     <div className="flex gap-4 flex-col font-clashDisplay">
-                      <h1 className="font-medium text-base mb-12">{product.name}</h1>
+                      <h1 className="font-medium text-base mb-12">
+                        {product.name}
+                      </h1>
                       <p className="font-normal">
-                        <span className="text-[#808080]">Engraving:</span> {product.description}
+                        <span className="text-[#808080]">Engraving:</span>{" "}
+                        {product.description}
                       </p>
                       <p className="font-normal">
-                        <span className="text-[#808080]">packaging:</span> {product.packaging}
+                        <span className="text-[#808080]">packaging:</span>{" "}
+                        {product.packaging}
                       </p>
                     </div>
                   </div>
@@ -82,20 +91,21 @@ const Order = () => {
 
           <div className="flex items-center justify-between p-4 font-clashDisplay font-medium text-base border border-[#E4E4E7] border-t-0">
             <h1>Fulfill this order effortlessly</h1>
-            <Button variant="brown" shape="rounded" types="filled">Fulfill order</Button>
+            <Button variant="primary" shape="rounded" types="filled">
+              Fulfill order
+            </Button>
           </div>
 
-          
           <div className="bg-white p-6 mt-4 border border-[#E4E4E7]">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <h1 className="font-clashDisplay font-semibold text-2xl">
                   Order Summary
                 </h1>
-                <StatusBadge
+                {/* <StatusBadge
                   value={order.unfulfillment}
                   successValue="pending"
-                />
+                /> */}
               </div>
               <ChevronDownIcon
                 className={`w-6 h-6 cursor-pointer transition-transform duration-300 ${
@@ -112,10 +122,22 @@ const Order = () => {
                     key={index}
                     className="flex items-center my-5 justify-between text-sm font-clashDisplay"
                   >
-                    <p className={items.label === "Total" ? "font-extrabold text-[#2B2B2B]" : "text-[#808080] font-medium"}>
+                    <p
+                      className={
+                        items.label === "Total"
+                          ? "font-extrabold text-[#2B2B2B]"
+                          : "text-[#808080] font-medium"
+                      }
+                    >
                       {items.label}
                     </p>
-                    <p className={items.label === "Total" ? "font-extrabold text-[#2B2B2B]" : "text-[#808080] font-medium"}>
+                    <p
+                      className={
+                        items.label === "Total"
+                          ? "font-extrabold text-[#2B2B2B]"
+                          : "text-[#808080] font-medium"
+                      }
+                    >
                       {items.price}
                     </p>
                   </div>
@@ -127,15 +149,17 @@ const Order = () => {
           <div className="flex items-center justify-between p-4 font-clashDisplay font-medium text-base border border-[#E4E4E7] border-t-0">
             <h1>Review your order at a glance</h1>
             <div className="flex gap-2">
-              <Button variant="brown" shape="rounded" types="outline">Send invoice</Button>
-              <Button variant="brown" shape="rounded" types="filled">Collect payment</Button>
+              <Button variant="primary" shape="rounded" types="outline">
+                Send invoice
+              </Button>
+              <Button variant="primary" shape="rounded" types="filled">
+                Collect payment
+              </Button>
             </div>
           </div>
         </div>
 
-        
         <div className="flex-[1] w-full font-clashDisplay">
-          
           <Card className="bg-white p-6 mt-6">
             <div className="flex items-center justify-between mb-6">
               <h1 className="font-semibold text-2xl">Customer</h1>
@@ -149,18 +173,17 @@ const Order = () => {
             {isCustomerOpen && (
               <div className="font-normal text-[#808080] flex flex-col gap-4">
                 <span className="flex items-center gap-4">
-                  <UserIconOpen/>
+                  <UserIconOpen />
                   <p>Prince Chijioke</p>
                 </span>
                 <span className="flex items-center gap-4 mt-4">
-                  <CartIcon/>
+                  <CartIcon />
                   <p>1 Order</p>
                 </span>
               </div>
             )}
           </Card>
 
-          
           <Card className="bg-white p-4 mt-5">
             <div className="flex items-center justify-between mb-4">
               <h1 className="font-semibold text-2xl">Contact Information</h1>
@@ -174,18 +197,17 @@ const Order = () => {
             {isContactOpen && (
               <div className="font-normal text-[#808080] flex flex-col gap-2">
                 <span className="flex items-center gap-4">
-                  <EmailIcon/>
+                  <EmailIcon />
                   <p>princeugbuta17@gmail.com</p>
                 </span>
                 <span className="flex items-center gap-4 mt-2">
-                  <ContactIconphone/>
+                  <ContactIconphone />
                   <p>+2349038283447</p>
                 </span>
               </div>
             )}
           </Card>
 
-          
           <Card className="bg-white p-4 mt-5">
             <div className="flex items-center justify-between mb-4">
               <h1 className="font-semibold text-2xl">Shipping address</h1>
@@ -199,11 +221,11 @@ const Order = () => {
             {isShippingOpen && (
               <div className="font-normal text-[#808080] flex flex-col gap-2">
                 <span className="flex items-center gap-4">
-                  <UserIconOpen/>
+                  <UserIconOpen />
                   <p>Prince Chijioke</p>
                 </span>
                 <address className="flex flex-col gap-1 not-italic text-gray-700">
-                  <span>2118 Thornridge Cir.</span> 
+                  <span>2118 Thornridge Cir.</span>
                   <span>Syracuse, Connecticut 35624</span>
                   <span>United Kingdom</span>
                   <span>+2349038283447</span>
@@ -212,7 +234,6 @@ const Order = () => {
             )}
           </Card>
 
-          
           <Card className="bg-white p-4 mt-5">
             <div className="flex items-center justify-between mb-4">
               <h1 className="font-semibold text-2xl">Billing address</h1>
