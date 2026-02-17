@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@/components";
 import { Filter, Search, UserPlus } from "lucide-react";
-import AddUserForm from "./adduserForm";
+import AddUserForm from "./UserForm";
 
 const MOCK_USERS: UserRow[] = [
   {

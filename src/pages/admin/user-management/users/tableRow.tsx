@@ -15,7 +15,7 @@ import {
   ConfirmationModal,
 } from "@/components";
 import type { ColumnDef } from "@tanstack/react-table";
-import AddUserForm from "./adduserForm";
+import AddUserForm from "./UserForm";
 import { useState } from "react";
 import { AssignClaim } from "./AssignClaim";
 import { AssignRole } from "./AssignRole";
