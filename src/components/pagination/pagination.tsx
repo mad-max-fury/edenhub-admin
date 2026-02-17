@@ -1,4 +1,4 @@
-import { Pagination } from "@mantine/core";
+// import { Pagination } from "@mantine/core";
 
 interface PaginationElementProps {
   page: number;
@@ -15,7 +15,7 @@ export function PaginationElement({
 
   return (
     <div className="flex justify-center">
-      <Pagination
+      {/* <Pagination
         value={page}
         onChange={onChange}
         total={total}
@@ -23,7 +23,7 @@ export function PaginationElement({
         size="md"
         withEdges
         siblings={1}
-      />
+      /> */}
     </div>
   );
 }

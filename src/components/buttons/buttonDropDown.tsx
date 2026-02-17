@@ -1,50 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   useFloating,
   offset,
   flip,
   shift,
   autoUpdate,
+  useClick,
+  useDismiss,
+  useRole,
+  useInteractions,
   type Placement,
 } from "@floating-ui/react";
 import { createPortal } from "react-dom";
-import { EllipsisIcon } from "@/assets/svgs";
 import { cn } from "@/utils/helpers";
 import { Typography, type TypographyColors } from "../typography";
 import { Button } from "./button";
 
 export type ButtonDropdownItem = {
   name: string;
+  icon?: React.ReactNode;
   textColor?: TypographyColors;
   onClick: () => void;
+  className?: string;
 };
 
 interface ButtonDropdownProps {
   buttonGroup: ButtonDropdownItem[];
+  triggerIcon?: React.ReactNode;
   colored?: boolean;
   isLoading?: boolean;
-  isVertical?: boolean;
   placement?: Placement;
+  className?: string;
 }
 
 export const ButtonDropdown = ({
   buttonGroup,
+  triggerIcon,
   colored = false,
   isLoading = false,
-  isVertical = false,
   placement = "bottom-end",
+  className,
 }: ButtonDropdownProps) => {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
 
-  const { refs, floatingStyles } = useFloating({
+  const { refs, floatingStyles, context } = useFloating({
     open,
     onOpenChange: setOpen,
     placement,
-    middleware: [offset(6), flip(), shift()],
+    middleware: [offset(8), flip(), shift()],
     whileElementsMounted: autoUpdate,
   });
+
+  const click = useClick(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context);
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    click,
+    dismiss,
+    role,
+  ]);
 
   return (
     <>
@@ -52,20 +69,15 @@ export const ButtonDropdown = ({
         ref={refs.setReference}
         variant="plain"
         disabled={isLoading}
-        onClick={() => setOpen((prev) => !prev)}
+        {...getReferenceProps()}
         className={cn(
-          "flex items-center",
-          colored && "rounded bg-N20 p-[12px] hover:bg-N700"
+          "flex items-center justify-center p-2 border border-N30 rounded-md text-gray-500 hover:bg-N20 transition-all",
+          colored && "bg-N20 hover:bg-N700 hover:text-white ",
+          open && "bg-N20 border-BR100 text-BR500",
+          className,
         )}
       >
-        <div
-          className={cn(
-            "transition-transform duration-300",
-            isVertical ? "rotate-90" : "rotate-0"
-          )}
-        >
-          <EllipsisIcon />
-        </div>
+        {triggerIcon}
       </Button>
 
       {open &&
@@ -73,26 +85,31 @@ export const ButtonDropdown = ({
           <div
             ref={refs.setFloating}
             style={floatingStyles}
-            className="z-50 w-[191px] rounded border bg-white py-2 shadow-lg"
+            {...getFloatingProps()}
+            className="z-[100] min-w-[180px] overflow-hidden rounded-xl border border-N40 bg-white py-1 shadow-xl animate-in fade-in zoom-in-95 duration-200"
           >
             {buttonGroup.map((item, index) => (
-              <div
+              <button
                 key={index}
-                role="menuitem"
-                tabIndex={0}
                 onClick={() => {
                   item.onClick();
                   setOpen(false);
                 }}
-                className="cursor-pointer px-4 py-2 hover:bg-N30"
+                className={cn(
+                  "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-N10",
+                  item.className,
+                )}
               >
-                <Typography variant="p-s" color={item.textColor}>
+                {item.icon && (
+                  <span className="text-gray-400">{item.icon}</span>
+                )}
+                <Typography variant="p-s" color={item.textColor || "N900"}>
                   {item.name}
                 </Typography>
-              </div>
+              </button>
             ))}
           </div>,
-          document.getElementById("portal") as HTMLElement
+          document.body,
         )}
     </>
   );

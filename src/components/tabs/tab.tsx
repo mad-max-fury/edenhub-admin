@@ -6,7 +6,7 @@ import { Button, Typography } from "@/components";
 import { cn } from "@/utils/helpers";
 
 // Type Definitions
-type Tab = {
+export type ITab = {
   label: string;
   query: string;
   count?: number;
@@ -15,19 +15,19 @@ type Tab = {
 };
 
 type SideTabProps = {
-  tabs: Tab[];
+  tabs: ITab[];
   onChange: (query: string) => void;
   activeTab: string;
   title?: string;
 };
 
 type MobileTabHeaderProps = {
-  tabs: Tab[];
+  tabs: ITab[];
   activeTab: string;
   onChange: (query: string) => void;
 };
 
-type DropdownMenuItem = Partial<Tab> & {
+type DropdownMenuItem = Partial<ITab> & {
   onClick: () => void;
 };
 
@@ -38,36 +38,32 @@ type DropdownMenuProps = {
 };
 
 // Main SideTab Component
-const SideTab: React.FC<SideTabProps> = ({
-  tabs,
-  onChange,
-  activeTab,
-  title,
-}) => {
+const Tab: React.FC<SideTabProps> = ({ tabs, onChange, activeTab, title }) => {
   const [sliderStyle, setSliderStyle] = useState<CSSProperties>({});
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     const activeIndex = tabs.findIndex((tab) => tab.query === activeTab);
     const activeTabRef = tabsRef.current[activeIndex];
+
     if (activeTabRef) {
-      const { offsetLeft, offsetTop, clientHeight } = activeTabRef;
-      const percentHeightCutOff = clientHeight * 0.5;
-      const additionOffsetTop = percentHeightCutOff / 2;
-      const height = clientHeight - percentHeightCutOff;
+      const { offsetLeft, clientWidth } = activeTabRef;
 
       setSliderStyle({
-        height,
+        position: "absolute",
         left: offsetLeft,
-        width: 4,
-        borderRadius: 5,
-        top: offsetTop + additionOffsetTop,
+        bottom: -11,
+        width: clientWidth,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: "BR400",
+        transition: "all 0.3s ease",
       });
     }
   }, [activeTab, tabs]);
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex  w-full flex-col">
       <div className="w-full md:hidden">
         <MobileTabHeader
           tabs={tabs}
@@ -75,10 +71,10 @@ const SideTab: React.FC<SideTabProps> = ({
           onChange={onChange}
         />
       </div>
-      <div className="flex gap-6">
-        <div className="relative flex w-max max-w-[170px] flex-col lg:flex mmd:hidden">
+      <div className=" flex flex-col w-full gap-6">
+        <div className="relative flex w-full  flex-row lg:flex mmd:hidden">
           {title && (
-            <div className="flex items-center">
+            <div className="flex items-center ">
               <Typography variant="p-s" fontWeight="bold" color={"N900"}>
                 {title}
               </Typography>
@@ -94,12 +90,12 @@ const SideTab: React.FC<SideTabProps> = ({
               onClick={() => (tab.isDisabled ? null : onChange(tab.query))}
               type="button"
               className={cn(
-                "cursor-pointer px-2 py-2 text-left hover:text-B300",
+                "cursor-pointer px-2 py-2 text-left hover:text-BR400 uppercase",
                 activeTab === tab.query
-                  ? "font-medium text-B400"
+                  ? "font-medium text-BR400"
                   : tab.isDisabled
-                  ? "cursor-not-allowed text-N40 hover:text-N40"
-                  : "text-N500"
+                    ? "cursor-not-allowed text-N40 hover:text-N40"
+                    : "text-gray-normal",
               )}
             >
               <Typography
@@ -111,11 +107,14 @@ const SideTab: React.FC<SideTabProps> = ({
               </Typography>
             </button>
           ))}
+          <div className="absolute left-0 w-full h-[1px] bg-BR400 top-10" />
+
           <div
-            className="absolute bottom-0 h-1 bg-B400 transition-all duration-300"
+            className="absolute bottom-0 h-2 rounded-t bg-BR400 transition-all duration-300"
             style={sliderStyle}
           />
         </div>
+
         <div className="flex-grow mlg:mt-4">
           {tabs.find((tab) => tab.query === activeTab)?.content}
         </div>
@@ -176,7 +175,7 @@ const MobileTabHeader: React.FC<MobileTabHeaderProps> = ({
         <AngleLeft />
       </button>
       <div
-        className="relative flex w-full flex-grow items-center justify-center after:absolute after:bottom-0 after:h-[2px] after:w-full after:bg-[#0052CC] after:content-['']"
+        className="relative flex w-full flex-grow items-center justify-center after:absolute after:bottom-0 after:h-[2px] after:w-full after:bg-BR50 after:content-['']"
         onClick={() => setShowDropdown(!showDropdown)}
         ref={referenceElement}
       >
@@ -184,7 +183,7 @@ const MobileTabHeader: React.FC<MobileTabHeaderProps> = ({
           variant={"plain"}
           className="flex items-center justify-center gap-2 text-center"
         >
-          <Typography color="B400">{tabs[activeIndex]?.label}</Typography>
+          <Typography color="BR400">{tabs[activeIndex]?.label}</Typography>
         </Button>
 
         <DropdownMenu
@@ -206,7 +205,6 @@ const MobileTabHeader: React.FC<MobileTabHeaderProps> = ({
   );
 };
 
-// Dropdown Menu Component
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
   items,
   isActive = false,
@@ -218,7 +216,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         "absolute left-0 right-0 top-[30px] z-[10] grid w-full transition-all duration-300 ease-in-out",
         isActive
           ? "overflow-[unset] grid-rows-[1fr] pt-2"
-          : "grid-rows-[0fr] overflow-hidden p-0"
+          : "grid-rows-[0fr] overflow-hidden p-0",
       )}
     >
       <div className={cn("w-full", isActive ? "p-1" : "overflow-hidden p-0")}>
@@ -227,12 +225,12 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
             <div
               key={i}
               className={cn(
-                "hover:text cursor-pointer px-4 py-[10px] hover:bg-gray-100",
+                "text-white cursor-pointer px-4 py-[10px] hover:bg-N30",
                 item?.isDisabled
                   ? "cursor-not-allowed text-N40 hover:bg-none"
                   : item.query === activeTab
-                  ? "bg-B50 hover:bg-B100"
-                  : ""
+                    ? "bg-BR50 hover:bg-BR100"
+                    : " text-N700",
               )}
               onClick={(e) => {
                 e.stopPropagation();
@@ -248,4 +246,4 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   );
 };
 
-export { SideTab };
+export { Tab };

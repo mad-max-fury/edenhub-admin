@@ -3,79 +3,110 @@
 import React from "react";
 import { cn } from "@/utils/helpers";
 import { cva, type VariantProps } from "class-variance-authority";
-
 import { Typography } from "../typography";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-[4px] px-[8px] py-[4px]",
+  "inline-flex items-center gap-1.5 rounded-[6px] px-2.5 py-[7px] border",
   {
     variants: {
       variant: {
-        blue: "bg-B50",
-        red: "bg-R50",
-        yellow: "bg-Y75",
-        green: "bg-G50",
-        purple: "bg-P50",
-        teal: "bg-T50",
-        gray: "bg-N20",
+        blue: "bg-B50 border-B100 text-B500",
+        red: "bg-R50 border-R100 text-R500",
+        yellow: "bg-Y50 border-Y100 text-Y500",
+        green: "bg-G50 border-G100 text-G500",
+        purple: "bg-P50 border-P100 text-P500",
+        teal: "bg-T50 border-T100 text-T500",
+        gray: "bg-N20 border-N40 text-N500",
       },
     },
     defaultVariants: {
       variant: "blue",
     },
-  }
+  },
 );
 
+const dotVariants = cva("w-1.5 h-1.5 rounded-full", {
+  variants: {
+    variant: {
+      blue: "bg-B300",
+      red: "bg-R300",
+      yellow: "bg-Y300",
+      green: "bg-G300",
+      purple: "bg-P300",
+      teal: "bg-T300",
+      gray: "bg-N100",
+    },
+  },
+  defaultVariants: {
+    variant: "blue",
+  },
+});
+
+const statusToVariant: Record<
+  string,
+  NonNullable<VariantProps<typeof badgeVariants>["variant"]>
+> = {
+  paid: "green",
+  pending: "yellow",
+  failed: "red",
+  refunded: "red",
+  "awaiting payment": "yellow",
+  "not subscribed": "red",
+  subscribed: "green",
+  shipped: "blue",
+  delivered: "green",
+  unfulfilled: "purple",
+  processing: "purple",
+  "in progress": "blue",
+  "partially fulfilled": "teal",
+  active: "green",
+  archived: "yellow",
+  cancelled: "red",
+  draft: "gray",
+  drafted: "gray",
+  low: "blue",
+  medium: "yellow",
+  high: "red",
+};
+
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
+  extends
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {
   text?: string;
+  status?: string;
+  showDot?: boolean;
 }
 
 const Badge: React.FC<BadgeProps> = ({
   className,
-  variant,
+  variant: variantProp,
+  status,
   text,
+  showDot = true,
   ...props
 }) => {
-  const getDefaultText = (variant: string): string => {
-    switch (variant) {
-      case "yellow":
-        return "Pending";
-      case "green":
-        return "Active";
-      case "blue":
-        return "In Progress";
-      default:
-        return "";
-    }
-  };
+  const derivedVariant =
+    variantProp ||
+    (status ? statusToVariant[status.toLowerCase()] : "blue") ||
+    "blue";
 
-  // const getTextColor = (variant: string): string => {
-  //   switch (variant) {
-  //     case "blue":
-  //       return "B500";
-  //     case "red":
-  //       return "R500";
-  //     case "yellow":
-  //       return "Y500";
-  //     case "green":
-  //       return "G500";
-  //     case "purple":
-  //       return "P500";
-  //     case "teal":
-  //       return "T500";
-  //     case "gray":
-  //       return "text-default";
-  //     default:
-  //       return "B500";
-  //   }
-  // };
+  const displayText = text || status || derivedVariant;
 
   return (
-    <span className={cn(badgeVariants({ variant }), className)} {...props}>
-      <Typography variant="p-s" color={"N700"} noWrap fontWeight="regular">
-        {text || getDefaultText(variant || "blue")}
+    <span
+      className={cn(badgeVariants({ variant: derivedVariant }), className)}
+      {...props}
+    >
+      {showDot && <span className={dotVariants({ variant: derivedVariant })} />}
+      <Typography
+        variant="p-s"
+        noWrap
+        fontWeight="medium"
+        className="text-[11px] leading-none capitalize"
+        style={{ color: "inherit" }}
+      >
+        {displayText}
       </Typography>
     </span>
   );

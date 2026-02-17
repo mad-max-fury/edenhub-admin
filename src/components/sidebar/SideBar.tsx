@@ -91,7 +91,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </header>
 
-      {/* Navigation Menu */}
       <nav
         className="flex-1 py-6 overflow-y-auto"
         aria-label="Primary navigation"
@@ -123,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                   {!isCollapsed && (
                     <>
-                      <span className="font-inter text-p-l text-inherit font-medium flex-1 text-left">
+                      <span className="font-inter text-p-m text-inherit font-medium flex-1 text-left">
                         {item.name}
                       </span>
                       {item.badge && (
@@ -159,13 +158,13 @@ const Sidebar: React.FC<SidebarProps> = ({
               className="w-full flex items-center justify-center"
               aria-label={`Expand sidebar - Current user: ${userProfile.name}`}
             >
-              <img
+              <ImageWrapper
                 src={userProfile.avatar}
                 alt={userProfile.name}
                 className="w-9 h-9 rounded-lg object-cover"
               />
             </button>
-            {/* Expand Button */}
+
             <button
               onClick={onToggleCollapse}
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-N20 transition-colors"

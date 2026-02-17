@@ -1,4 +1,3 @@
-import React from "react";
 import { EditBlueIcon, TrashIcon } from "@/assets/svgs";
 
 interface IActionButtonProps {
@@ -11,8 +10,8 @@ const buttonStyles = {
   danger: "hover:bg-R50 text-R400",
 };
 const icons = {
-  info: <EditBlueIcon />,
-  danger: <TrashIcon />,
+  info: <EditBlueIcon className="h-[24px] w-[24px]" />,
+  danger: <TrashIcon className="h-[24px] w-[24px]" />,
 };
 export const ActionButton = ({
   variant,

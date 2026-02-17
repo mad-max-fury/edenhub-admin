@@ -74,11 +74,7 @@ const AuthWrapper = ({
                   <span className="text-p-s text-N200"> Or</span>
                   <hr className="flex-1 h-[1px] border-none bg-N30" />
                 </div>
-                <Button
-                  variant={"brown"}
-                  types={"outline"}
-                  className="w-full group"
-                >
+                <Button types={"outline"} className="w-full group">
                   <div className="flex text-base items-center gap-4">
                     <GoogleIcon className={`[&>path]:group-hover:fill-white`} />
                     <small className="text-c-m">Continue with Google</small>

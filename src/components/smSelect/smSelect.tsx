@@ -80,7 +80,7 @@ const selectStyles = ({
   }),
   control: (
     styles: any,
-    { isDisabled, isFocused }: { isDisabled: boolean; isFocused: boolean }
+    { isDisabled, isFocused }: { isDisabled: boolean; isFocused: boolean },
   ) => ({
     ...styles,
     borderRadius: "4px",
@@ -95,8 +95,8 @@ const selectStyles = ({
       border: isFocused
         ? "1px solid #0052CC"
         : isError
-        ? "1px solid red"
-        : "1px solid #dfe1e6",
+          ? "1px solid red"
+          : "1px solid #dfe1e6",
     },
   }),
   option: (
@@ -105,7 +105,7 @@ const selectStyles = ({
       isDisabled,
       isFocused,
       isSelected,
-    }: { isDisabled: boolean; isFocused: boolean; isSelected: boolean }
+    }: { isDisabled: boolean; isFocused: boolean; isSelected: boolean },
   ) => ({
     ...styles,
     fontSize: "14px",
@@ -118,8 +118,8 @@ const selectStyles = ({
     backgroundColor: isDisabled
       ? "#f4f5f7"
       : isSelected
-      ? "#EBECF0"
-      : "#ffffff",
+        ? "#EBECF0"
+        : "#ffffff",
     "&:hover": {
       backgroundColor: isSelected ? "#EBECF0" : "#DFE1E6",
     },
@@ -182,7 +182,7 @@ export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
       isMulti = false,
       name,
     },
-    ref
+    ref,
   ) => {
     const handleChange = async (value: OptionType) => {
       const awaitedValue = await value;
@@ -267,7 +267,7 @@ export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 SMSelectDropDown.displayName = "SMSelectDropDown";
