@@ -1,30 +1,14 @@
-import React, { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { userColumns, type UserRow } from "./tableRow";
 import {
-  Search,
-  Filter,
-  UserPlus,
-  MoreVertical,
-  Mail,
-  Shield,
-} from "lucide-react";
-import {
-  Typography,
-  TMTable,
-  ButtonDropdown,
-  Badge,
   Button,
-  Avatar,
+  ButtonDropdown,
+  Modal,
+  TMTable,
+  Typography,
 } from "@/components";
-import type { ColumnDef } from "@tanstack/react-table";
-
-type UserRow = {
-  id: string;
-  fullName: string;
-  email: string;
-  staffId: string;
-  role: "Super Admin" | "Admin" | "Employee";
-  status: "active" | "inactive";
-};
+import { Filter, Search, UserPlus } from "lucide-react";
+import AddUserForm from "./adduserForm";
 
 const MOCK_USERS: UserRow[] = [
   {
@@ -33,6 +17,7 @@ const MOCK_USERS: UserRow[] = [
     email: "j.chukwunonso@genesystechhub.com",
     staffId: "GC130",
     role: "Super Admin",
+    claims: 5,
     status: "active",
   },
   {
@@ -41,6 +26,8 @@ const MOCK_USERS: UserRow[] = [
     email: "s.muo@genesystechhub.com",
     staffId: "TC130105",
     role: "Admin",
+    claims: 15,
+
     status: "active",
   },
   {
@@ -50,6 +37,7 @@ const MOCK_USERS: UserRow[] = [
     staffId: "TC130106",
     role: "Employee",
     status: "inactive",
+    claims: 10,
   },
   {
     id: "4",
@@ -58,73 +46,14 @@ const MOCK_USERS: UserRow[] = [
     staffId: "TC130107",
     role: "Employee",
     status: "active",
-  },
-];
-
-export const userColumns: ColumnDef<UserRow>[] = [
-  {
-    header: "Full Name",
-    accessorKey: "fullName",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <Avatar size={"md"} fullname={row.original.fullName} />
-        <div className="flex flex-col">
-          <Typography variant="p-s" fontWeight="bold">
-            {row.original.fullName}
-          </Typography>
-          <Typography
-            variant="c-s"
-            color="N500"
-            className="flex items-center gap-1 lowercase"
-          >
-            {row.original.email}
-          </Typography>
-        </div>
-      </div>
-    ),
-  },
-  {
-    header: "Staff ID",
-    accessorKey: "staffId",
-    cell: ({ row }) => (
-      <Typography variant="p-s" className="font-mono text-N600">
-        {row.original.staffId}
-      </Typography>
-    ),
-  },
-  {
-    header: "Role",
-    accessorKey: "role",
-    cell: ({ row }) => {
-      const role = row.original.role;
-
-      return <div className="flex items-center gap-2">{role}</div>;
-    },
-  },
-  {
-    header: "Status",
-    accessorKey: "status",
-    cell: ({ row }) => (
-      <Badge status={row.original.status === "active" ? "active" : "archived"}>
-        {row.original.status === "active" ? "Active" : "Disabled"}
-      </Badge>
-    ),
-  },
-  {
-    header: "Action",
-    id: "action",
-    cell: () => (
-      <button className="p-2 hover:bg-N10 rounded-lg text-N500 transition-colors">
-        <MoreVertical size={18} />
-      </button>
-    ),
+    claims: 12,
   },
 ];
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeRole, setActiveRole] = useState("All Roles");
-
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const filteredUsers = useMemo(() => {
     return MOCK_USERS.filter((user) => {
       const matchesSearch =
@@ -157,10 +86,10 @@ const Users = () => {
             Manage access and track your team members.
           </Typography>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
           <div className="flex items-center gap-2">
-            <UserPlus size={18} />
-            <span>Add User</span>
+            <UserPlus size={14} />
+            <span className="text-xs ">Add User</span>
           </div>
         </Button>
       </div>
@@ -196,6 +125,15 @@ const Users = () => {
           pageSize={10}
           totalCount={filteredUsers.length}
         />
+
+        <Modal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          title="Invite New User"
+          mobileLayoutType="full"
+        >
+          <AddUserForm onClose={() => setIsAddModalOpen(false)} />
+        </Modal>
       </section>
     </div>
   );

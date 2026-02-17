@@ -106,7 +106,7 @@ export function TMTable<T>({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-4 text-left text-sm font-medium text-N700"
+                      className="px-6 py-4 text-left text-xs font-medium text-N700"
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -130,7 +130,7 @@ export function TMTable<T>({
                     className="border-b last:border-none"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3 text-sm text-N900">
+                      <td key={cell.id} className="px-4 py-3 text-xs text-N900">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
