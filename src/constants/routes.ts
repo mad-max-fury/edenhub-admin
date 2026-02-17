@@ -8,5 +8,7 @@ export const AuthRouteConfig = {
   PRODUCTS: "/admin/products",
   ORDERS: "/admin/orders",
   CUSTOMERS: "/admin/customers",
+  USER_MANAGEMENT: "/admin/user-management",
+  AUDIT_TRAIL: "/admin/audit-trail",
   SETTINGS: "/admin/settings",
 };

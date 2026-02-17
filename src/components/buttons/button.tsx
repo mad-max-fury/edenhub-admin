@@ -9,7 +9,7 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
   variants: {
     variant: {
       primary:
-        "bg-B400 hover:bg-B300 text-N0 disabled:bg-B75 disabled:text-N70 disabled:cursor-not-allowed", // blue
+        "bg-BR300 hover:bg-BR400 text-N0 disabled:bg-BR75 disabled:text-N20 disabled:cursor-not-allowed",
       secondary:
         "bg-N20 text-N700 hover:bg-N40 disabled:opacity-50 hover:disabled:bg-N20 disabled:cursor-not-allowed", // extra light ash
       neutral:
@@ -18,9 +18,8 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
         "bg-Y300 hover:bg-Y200 text-N0 disabled:bg-Y75 disabled:text-N70 disabled:cursor-not-allowed", // yellow
       danger:
         "bg-R400 hover:bg-R300 text-N0 disabled:bg-R75 disabled:text-N20 disabled:cursor-not-allowed", // red
-      brown:
-        "bg-BR500 hover:bg-BR400 text-N0 disabled:bg-BR75 disabled:text-N20 disabled:cursor-not-allowed",
-      gold: "bg-card hover:bg-LB400 text-N0 disabled:bg-LB75 disabled:text-N20 disabled:cursor-not-allowed", // brown
+      blue: "bg-B400 hover:bg-B300 text-N0 disabled:bg-B75 disabled:text-N70 disabled:cursor-not-allowed", // blue
+      gold: "bg-LB300 hover:bg-LB400 text-N0 disabled:bg-LB75 disabled:text-N20 disabled:cursor-not-allowed", // brown
       "brown-light":
         "bg-BR400 hover:bg-BR300 text-N0 disabled:bg-BR75 disabled:text-N20 disabled:cursor-not-allowed", // brown light
       plain:
@@ -28,6 +27,7 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
     },
     size: {
       default: "p-[12px]",
+      sm: "p-[10px]",
       plain: "",
     },
     types: {
@@ -46,7 +46,7 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
       types: "outline",
       variant: "primary",
       className:
-        "bg-transparent text-B400 border border-B400 hover:border-transparent hover:text-N0",
+        "bg-transparent text-BR400 border border-BR400 hover:border-transparent hover:text-N0",
     },
     {
       types: "outline",
@@ -67,9 +67,9 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
     },
     {
       types: "outline",
-      variant: "brown",
+      variant: "blue",
       className:
-        "bg-transparent text-BR400 border border-BR400 hover:border-transparent hover:text-N0",
+        "bg-transparent text-B400 border border-B400 hover:border-transparent hover:text-N0",
     },
     {
       types: "outline",
@@ -93,7 +93,8 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
 });
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   loading?: boolean;
   asChild?: boolean;
@@ -112,7 +113,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       ...props
     },
-    ref
+    ref,
   ) => {
     const Comp = asChild ? Slot : "button";
 
@@ -121,7 +122,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(
           buttonVariants({ variant, size, types, shape, className }),
-          "flex items-center justify-center gap-4"
+          "flex items-center justify-center gap-4",
         )}
         {...(!asChild ? props : {})}
       >
@@ -142,7 +143,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </Comp>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

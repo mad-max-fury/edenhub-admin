@@ -12,8 +12,9 @@ import { cn } from "@/utils/helpers";
 import { InfiniteProgressBar } from "../infiniteProgressBar/infiniteProgressBar";
 import { PaginationElement } from "../pagination/pagination";
 import { Typography } from "../typography";
-import { EmptyStateIcon, HamburgerIcon, SearchErrorIcon, SearchIcon } from "@/assets/svgs";
+import { EmptyStateIcon, SearchErrorIcon } from "@/assets/svgs";
 import { Button } from "@/components/buttons/button";
+import { SortIcon } from "@/assets/svgs";
 
 interface TMTableProps<T> {
   columns: ColumnDef<T>[];
@@ -87,10 +88,9 @@ export function TMTable<T>({
           </Typography>
           {additionalTitleData}
           <div className="flex items-center justify-center gap-4">
-            <Button variant="secondary" shape="rounded" types="outline"><SearchIcon/></Button>
-            <Button variant="secondary" shape="rounded" types="outline"><HamburgerIcon/></Button>
-            <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
-            <Button variant="secondary" shape="rounded" types="outline">12 Months</Button>
+            <Button variant="secondary" shape="rounded" types="outline">
+              <SortIcon />{" "}
+            </Button>
           </div>
         </div>
       )}
@@ -100,17 +100,17 @@ export function TMTable<T>({
 
         <div className={noBottomSpace ? "" : "overflow-x-auto"}>
           <table className="w-full border-collapse">
-            <thead >
+            <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={cn(headerClassName)}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-4 text-left text-sm font-medium text-N700"
+                      className="px-6 py-4 text-left text-xs font-medium text-N700"
                     >
                       {flexRender(
                         header.column.columnDef.header,
-                        header.getContext()
+                        header.getContext(),
                       )}
                     </th>
                   ))}
@@ -130,10 +130,10 @@ export function TMTable<T>({
                     className="border-b last:border-none"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3 text-sm text-N900">
+                      <td key={cell.id} className="px-4 py-3 text-xs text-N900">
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </td>
                     ))}
