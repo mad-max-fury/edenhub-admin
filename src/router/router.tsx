@@ -3,6 +3,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 
 import NotFound from "@/pages/notFound/NotFound";
 import { PageLoader } from "@/components";
+import ProtectedRouteLayout from "@/pages/admin/RouteGuard";
 
 const AdminLayout = lazy(() => import("@/pages/admin/layout"));
 const LoginPage = lazy(() => import("@/pages/auth/login/Login"));
@@ -20,6 +21,7 @@ const ProductDetails = lazy(
   () => import("@/pages/admin/products/productDetails"),
 );
 const Orders = lazy(() => import("@/pages/admin/orders"));
+
 const Order = lazy(() => import("@/pages/admin/orders/order"));
 const Customers = lazy(() => import("@/pages/admin/customers"));
 const UserManagementLayout = lazy(
@@ -62,49 +64,54 @@ export const router = createBrowserRouter([
 
   {
     path: "/admin",
-    element: withSuspense(AdminLayout),
+    element: <ProtectedRouteLayout />,
     children: [
-      { index: true, element: withSuspense(Dashboard) },
-      { path: "analytics", element: withSuspense(Analytics) },
-      { path: "products", element: withSuspense(Products) },
-      { path: "products/:id", element: withSuspense(ProductDetails) },
-      { path: "orders", element: withSuspense(Orders) },
-      { path: "orders/:id", element: withSuspense(Order) },
-      { path: "customers", element: withSuspense(Customers) },
       {
-        path: "user-management",
-        element: withSuspense(UserManagementLayout),
+        element: withSuspense(AdminLayout),
         children: [
-          { index: true, element: <Navigate to="users" replace /> },
-          { path: "users", element: withSuspense(Users) },
+          { index: true, element: withSuspense(Dashboard) },
+          { path: "analytics", element: withSuspense(Analytics) },
+          { path: "products", element: withSuspense(Products) },
+          { path: "products/:id", element: withSuspense(ProductDetails) },
+          { path: "orders", element: withSuspense(Orders) },
+          { path: "orders/:id", element: withSuspense(Order) },
+          { path: "customers", element: withSuspense(Customers) },
           {
-            path: "roles",
-            element: withSuspense(RolesManagement),
+            path: "user-management",
+            element: withSuspense(UserManagementLayout),
+            children: [
+              { index: true, element: <Navigate to="users" replace /> },
+              { path: "users", element: withSuspense(Users) },
+              {
+                path: "roles",
+                element: withSuspense(RolesManagement),
+              },
+              {
+                path: "menus",
+                element: withSuspense(MenusManagement),
+              },
+            ],
           },
+          { path: "audit-trail", element: withSuspense(AuditTrail) },
           {
-            path: "menus",
-            element: withSuspense(MenusManagement),
+            path: "settings",
+            element: withSuspense(SettingsLayout),
+            children: [
+              { index: true, element: <Navigate to="profile" replace /> },
+              { path: "profile", element: withSuspense(ProfileSettings) },
+              {
+                path: "security",
+                element: withSuspense(SecuritySettings),
+              },
+              {
+                path: "notifications",
+                element: withSuspense(NotificationSettings),
+              },
+            ],
           },
+          { path: "*", element: <NotFound /> },
         ],
       },
-      { path: "audit-trail", element: withSuspense(AuditTrail) },
-      {
-        path: "settings",
-        element: withSuspense(SettingsLayout),
-        children: [
-          { index: true, element: <Navigate to="profile" replace /> },
-          { path: "profile", element: withSuspense(ProfileSettings) },
-          {
-            path: "security",
-            element: withSuspense(SecuritySettings),
-          },
-          {
-            path: "notifications",
-            element: withSuspense(NotificationSettings),
-          },
-        ],
-      },
-      { path: "*", element: <NotFound /> },
     ],
   },
 

@@ -17,8 +17,12 @@ import TopBar from "@/components/topbar/Topbar";
 import type { Crumb } from "@/components/breadCrumbs/breadCrumbs";
 import { AuthRouteConfig } from "@/constants/routes";
 import { Drawer } from "@/components";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/stores";
 
 const AdminLayout = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [openSideMenu, setOpenMenu] = useState(false);
@@ -109,8 +113,12 @@ const AdminLayout = () => {
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
           userProfile={{
-            name: "Ndubuisi Obinna",
-            role: "Super Admin",
+            name: user?.firstName + " " + user?.lastName,
+            role:
+              user?.role?.name
+                .split(" ")
+                .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
+                .join(" ") || "User",
             avatar:
               "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
           }}
@@ -154,8 +162,12 @@ const AdminLayout = () => {
             isCollapsed={false}
             onToggleCollapse={() => setOpenMenu(false)}
             userProfile={{
-              name: "Ndubuisi Obinna",
-              role: "Super Admin",
+              name: user?.firstName + " " + user?.lastName,
+              role:
+                user?.role?.name
+                  .split(" ")
+                  .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
+                  .join(" ") || "User",
               avatar:
                 "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
             }}

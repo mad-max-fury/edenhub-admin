@@ -1,19 +1,15 @@
-"use client";
+import React, { type RefObject } from "react";
 
-import React, { useRef } from "react";
-
-import { EditBlueIcon } from "@/assets/svgs";
 import {
   checkIfFilesAreTooBig,
   checkIfImagesAreCorrectType,
   cn,
   getInitials,
 } from "@/utils/helpers";
-import { Menu, MenuButton, MenuItem } from "@szhsin/react-menu";
 
 import { notify } from "../notifications/notify";
-import { Typography } from "../typography";
 import ImageWrapper from "../imageLoader/ImageLoader";
+import { Spinner } from "../loaders";
 
 const bgColorInitials = ["B", "R", "Y", "G", "P", "T"];
 const textColorInitials = ["N"];
@@ -205,13 +201,13 @@ const bgColorClasses = {
 const getRandomColor = (
   strArray: string[],
   minWeight: number = 300,
-  maxWeight: number = 500
+  maxWeight: number = 500,
 ) => {
   const colorKeys = Object.keys(bgColorClasses).filter(
     (key) =>
       strArray.includes(key[0]) &&
       parseInt(key.slice(1)) >= minWeight &&
-      parseInt(key.slice(1)) <= maxWeight
+      parseInt(key.slice(1)) <= maxWeight,
   );
   const randomIndex = Math.floor(Math.random() * colorKeys.length);
   return colorKeys[randomIndex] as keyof typeof bgColorClasses;
@@ -228,7 +224,8 @@ interface AvatarProps {
   };
   upload?: boolean;
   onFileUpload?: (file: File) => void;
-  onFileDelete?: () => void;
+  loading?: boolean;
+  fileInputRef?: RefObject<HTMLInputElement | null>;
 }
 
 const sizeMap = {
@@ -268,16 +265,16 @@ export const Avatar: React.FC<AvatarProps> = ({
   colorStyles,
   upload,
   onFileUpload,
-  onFileDelete,
+  loading,
+  fileInputRef,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const randomBgColor = React.useMemo(
     () => getRandomColor(bgColorInitials),
-    []
+    [],
   );
   const randomTextColor = React.useMemo(
     () => getRandomColor(textColorInitials, 0, 0),
-    []
+    [],
   );
   const bgColor = bgColorClasses[colorStyles?.bgColor ?? randomBgColor];
   const textColor = textColorClasses[colorStyles?.textColor ?? randomTextColor];
@@ -286,9 +283,6 @@ export const Avatar: React.FC<AvatarProps> = ({
   const dimensionSize = sizeMap[size];
 
   const initials = getInitials(fullname);
-  const handleFileUpload = () => {
-    fileInputRef.current?.click();
-  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -311,20 +305,15 @@ export const Avatar: React.FC<AvatarProps> = ({
     }
   };
 
-  const handleFileDelete = () => {
-    if (onFileDelete) {
-      onFileDelete();
-    }
-  };
   return (
     <div className="relative inline-block">
       <div
         className={cn(
-          `inline-flex items-center justify-center overflow-hidden rounded-full`,
+          `inline-flex items-center isolate justify-center overflow-hidden rounded-full`,
           bgColor,
           sizeClass,
           textColor,
-          className
+          className,
         )}
       >
         {src ? (
@@ -340,10 +329,6 @@ export const Avatar: React.FC<AvatarProps> = ({
         )}
         {upload && (
           <>
-            <UploadButton
-              uploadImgFunc={handleFileUpload}
-              deletImgFunc={handleFileDelete}
-            />
             <input
               type="file"
               ref={fileInputRef}
@@ -353,45 +338,20 @@ export const Avatar: React.FC<AvatarProps> = ({
             />
           </>
         )}
+
+        {loading && (
+          <div
+            className={cn(
+              "h-full bg-black/70 text-white w-full absolute z-[10] top-0 left-0 right-0 bottom-0 rounded-full flex justify-center items-center",
+              sizeClass,
+            )}
+          >
+            <div className="mb-5">
+              <Spinner />
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  );
-};
-
-const UploadButton = ({
-  uploadImgFunc,
-  deletImgFunc,
-}: {
-  uploadImgFunc?: () => void;
-  deletImgFunc?: () => void;
-}) => {
-  return (
-    <Menu
-      menuButton={
-        <MenuButton className={"group h-fit w-fit"}>
-          <div className="absolute bottom-0 right-0 z-10 flex h-[40px] w-[40px] items-center justify-center rounded-full bg-B50 text-B400 shadow-md">
-            <EditBlueIcon />
-          </div>
-        </MenuButton>
-      }
-      className={
-        "mt-16 [&>ul.szh-menu]:!top-[30px] [&>ul.szh-menu]:!dropdown-menu-box-shadow"
-      }
-      transition
-      align="end"
-    >
-      <div className={"w-[90vw] max-w-[202px]"}>
-        <MenuItem className={"!p-3"} onClick={uploadImgFunc}>
-          <Typography variant={"c-m"} color={"N800"} className="">
-            Upload Image
-          </Typography>
-        </MenuItem>
-        <MenuItem className={"!p-3"} onClick={deletImgFunc}>
-          <Typography variant={"c-m"} color={"R500"} className="">
-            Delete
-          </Typography>
-        </MenuItem>
-      </div>
-    </Menu>
   );
 };

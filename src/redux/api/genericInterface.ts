@@ -1,12 +1,17 @@
-export interface Response<T = null> {
+export interface IResponse<T = null> {
   status: number;
   message: string;
   data: T;
 }
 export interface IApiError {
-  status: string | number;
+  status: string;
   message: string;
-  errors: string[];
+  error?: {
+    statusCode: number;
+    status: string;
+    isOperational: boolean;
+  };
+  stack?: string;
   success?: boolean;
 }
 export interface IPaginatedResponse<T> {

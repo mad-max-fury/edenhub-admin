@@ -1,106 +1,185 @@
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Typography, TextField, Button, Avatar } from "@/components";
+import { useDispatch, useSelector } from "react-redux";
+
+import { Typography, TextField, Button, Avatar, notify } from "@/components";
 import { ProfileSchema, type IProfilePayload } from "./schema";
+import { getErrorMessage } from "@/utils/getErrorMessges";
+
+import type { RootState } from "@/redux/stores";
+import { updateUser as updateUserAction } from "@/redux/api/auth/authSlice";
+import { useUpdateUserByIdMutation } from "@/redux/api/users";
+import {
+  useDeleteResourceMutation,
+  useUploadMutation,
+} from "@/redux/api/resources";
 
 const ProfileSettings = () => {
-  const [profileImage, setProfileImage] = useState<string | null>(
-    "https://i.pravatar.cc/150",
+  const dispatch = useDispatch();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserByIdMutation();
+  const [uploadFile, { isLoading: isUploading }] = useUploadMutation();
+  const [deleteFile, { isLoading: isDeleting }] = useDeleteResourceMutation();
+
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const isGlobalLoading = isUpdating || isUploading || isDeleting;
+
+  const defaultValues = useMemo(
+    () => ({
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      phone: user?.phoneNumber || "",
+      country: user?.country || "",
+      state: user?.state || "",
+      city: user?.city || "",
+    }),
+    [user],
   );
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<IProfilePayload>({
     resolver: yupResolver(ProfileSchema),
     mode: "onChange",
-    defaultValues: {
-      firstName: "Prince",
-      lastName: "Chijioke",
-      email: "princeugbuta17@gmail.com",
-      phone: "+2349038283447",
-      country: "Nigeria",
-      state: "Enugu State",
-      city: "Enugu",
-    },
+    values: defaultValues,
   });
 
-  const onSubmit = (data: IProfilePayload) => {
-    // Combine form data with the profile image for the API request
-    const payload = { ...data, profileImage };
-    console.log("Submitting Profile Update:", payload);
+  const onSubmit = async (data: IProfilePayload) => {
+    try {
+      const response = await updateUser({
+        id: user?._id || "",
+        user: data,
+      }).unwrap();
+
+      console.log(response);
+
+      dispatch(updateUserAction(response.data.data));
+
+      notify.success({
+        message: "Profile updated successfully",
+        subtitle: "Looking great",
+      });
+    } catch (error) {
+      notify.error({
+        message: "Update failed",
+        subtitle: getErrorMessage(error),
+      });
+    }
   };
 
-  // Logic for Avatar component's upload prop
-  const handleImageUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setProfileImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  const handleImageUpload = async (file: File) => {
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewImage(objectUrl);
+
+    try {
+      const res = await uploadFile({
+        file,
+        params: { type: "profiles" },
+      }).unwrap();
+
+      const newAvatarUrl = res.data.url;
+      await updateUser({
+        id: user?._id || "",
+        user: { profilePicture: newAvatarUrl },
+      }).unwrap();
+
+      dispatch(updateUserAction({ profilePicture: newAvatarUrl }));
+      notify.success({
+        message: "Profile picture updated",
+        subtitle: "your new look, looks good!",
+      });
+    } catch (error) {
+      setPreviewImage(null);
+      notify.error({
+        message: "Upload failed",
+        subtitle: getErrorMessage(error),
+      });
+    }
   };
 
-  const handleImageDelete = () => {
-    setProfileImage(null);
+  const handleImageDelete = async () => {
+    if (!user?.profilePicture) return;
+
+    try {
+      await deleteFile({ key: user.profilePicture }).unwrap();
+
+      await updateUser({
+        id: user._id,
+        user: { profilePicture: "" },
+      }).unwrap();
+
+      dispatch(updateUserAction({ profilePicture: "" }));
+      setPreviewImage(null);
+      notify.info({
+        message: "Profile picture removed",
+        subtitle: "you have successfully removed your profile picture",
+      });
+    } catch (error) {
+      notify.error({
+        message: "Delete failed",
+        subtitle: getErrorMessage(error),
+      });
+    }
   };
 
   return (
     <div className="flex flex-col gap-10 animate-in fade-in duration-700">
-      <div>
+      <header>
         <Typography variant="h-m" fontWeight="bold">
           Profile Settings
         </Typography>
         <Typography variant="p-s" color="N600">
-          Your Personal Information.
+          Update your personal information and profile picture.
         </Typography>
-      </div>
+      </header>
 
-      <div className="flex flex-wrap items-center gap-6 pb-8 border-b border-N30">
+      <section className="flex flex-wrap items-center gap-6 pb-8 border-b border-N30">
         <Avatar
-          fullname="Prince Chijioke"
+          fullname={`${user?.firstName} ${user?.lastName}`}
           size="xxl"
-          src={profileImage}
+          src={previewImage || user?.profilePicture || ""}
           onFileUpload={handleImageUpload}
-          onFileDelete={handleImageDelete}
-          upload={false}
+          loading={isDeleting || isUploading}
+          fileInputRef={fileInputRef}
+          upload
         />
         <div className="flex flex-col gap-1 grow">
           <Typography variant="h-s" fontWeight="medium">
             Profile Picture
           </Typography>
           <Typography variant="p-s" color="N500">
-            PNG, JPG under 2MB
+            WEBP, PNG, or JPG. Optimized automatically.
           </Typography>
         </div>
+
         <div className="flex gap-3">
-          <input
-            type="file"
-            id="avatar-upload"
-            className="hidden"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleImageUpload(file);
-            }}
-          />
           <Button
             variant="brown-light"
             className="!bg-[#74594D] !text-white px-6 font-bold"
-            onClick={() => document.getElementById("avatar-upload")?.click()}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isGlobalLoading}
+            loading={isUploading}
           >
-            Upload new picture
+            Upload New
           </Button>
           <Button
             variant="secondary"
             className="!bg-[#E5E7EB] !border-none px-6 text-N700 font-bold"
             onClick={handleImageDelete}
+            disabled={isGlobalLoading || !user?.profilePicture}
+            loading={isDeleting}
           >
             Delete
           </Button>
         </div>
-      </div>
+      </section>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
         <Typography variant="h-m" fontWeight="bold">
@@ -112,7 +191,6 @@ const ProfileSettings = () => {
             label="First Name"
             name="firstName"
             register={register}
-            placeholder="Prince"
             error={!!errors.firstName}
             errorText={errors.firstName?.message}
           />
@@ -120,7 +198,6 @@ const ProfileSettings = () => {
             label="Last Name"
             name="lastName"
             register={register}
-            placeholder="Chijioke"
             error={!!errors.lastName}
             errorText={errors.lastName?.message}
           />
@@ -129,7 +206,7 @@ const ProfileSettings = () => {
             name="email"
             type="email"
             register={register}
-            placeholder="princeugbuta17@gmail.com"
+            disabled
             error={!!errors.email}
             errorText={errors.email?.message}
           />
@@ -137,7 +214,6 @@ const ProfileSettings = () => {
             label="Phone Number"
             name="phone"
             register={register}
-            placeholder="+2349038283447"
             error={!!errors.phone}
             errorText={errors.phone?.message}
           />
@@ -145,7 +221,6 @@ const ProfileSettings = () => {
             label="Country"
             name="country"
             register={register}
-            placeholder="Nigeria"
             error={!!errors.country}
             errorText={errors.country?.message}
           />
@@ -153,7 +228,6 @@ const ProfileSettings = () => {
             label="State"
             name="state"
             register={register}
-            placeholder="Enugu State"
             error={!!errors.state}
             errorText={errors.state?.message}
           />
@@ -161,7 +235,6 @@ const ProfileSettings = () => {
             label="City"
             name="city"
             register={register}
-            placeholder="Enugu"
             error={!!errors.city}
             errorText={errors.city?.message}
           />
@@ -172,9 +245,10 @@ const ProfileSettings = () => {
             type="submit"
             className="w-full md:w-auto px-10 !border-[#74594D] !text-[#74594D] hover:!bg-[#74594D] hover:!text-white font-bold"
             types="outline"
-            loading={isSubmitting}
+            loading={isUpdating}
+            disabled={isGlobalLoading}
           >
-            Save profile settings
+            Save Profile Settings
           </Button>
         </div>
       </form>

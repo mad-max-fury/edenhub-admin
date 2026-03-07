@@ -1,14 +1,23 @@
 import AuthWrapper from "../AuthWrapper";
-import { AppLogo, Button, TextField, Typography } from "@/components";
+import { AppLogo, Button, notify, TextField, Typography } from "@/components";
 import { type ISignInPayload } from "../interfaces";
 import { LoginSchema } from "../schema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthRouteConfig } from "@/constants/routes";
+import { useLoginMutation } from "@/redux/api";
+import { setCredentials } from "@/redux/api/auth/authSlice";
+import { getErrorMessage } from "@/utils/getErrorMessges";
+import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
+import { cookieValues } from "@/constants/data";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [login, { isLoading }] = useLoginMutation();
 
   const {
     register,
@@ -19,9 +28,38 @@ const LoginPage = () => {
     mode: "onChange",
   });
 
-  const onSubmit = (formData: ISignInPayload) => {
-    console.log("formData", formData);
-    navigate(AuthRouteConfig.DASHBOARD);
+  const onSubmit = async (formData: ISignInPayload) => {
+    try {
+      const response = await login({
+        email: formData.email,
+        password: formData.password,
+      }).unwrap();
+
+      console.log(response);
+
+      dispatch(
+        setCredentials({
+          user: response.data.user,
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
+        }),
+      );
+
+      Cookies.set(cookieValues.token, response.data.accessToken);
+      Cookies.set(cookieValues.refreshToken, response.data.refreshToken);
+
+      notify.success({
+        message: "Login successful!",
+        subtitle: "Welcome back!",
+      });
+
+      navigate(AuthRouteConfig.DASHBOARD);
+    } catch (error) {
+      notify.error({
+        message: "Login failed",
+        subtitle: getErrorMessage(error),
+      });
+    }
   };
   return (
     <AuthWrapper
@@ -69,7 +107,8 @@ const LoginPage = () => {
         <Button
           className="mb-6 mt-3 flex w-full !items-center !justify-center !text-center font-bold"
           variant={"brown-light"}
-          loading={false}
+          loading={isLoading}
+          type="submit"
         >
           Sign In
         </Button>
