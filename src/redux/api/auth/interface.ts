@@ -1,3 +1,5 @@
+import type { IRole } from "../roles";
+
 export interface ILoginInput {
   email: string;
   password: string;
@@ -15,6 +17,7 @@ export interface IUser {
   email: string;
   firstName: string;
   lastName: string;
+  staffId?: string;
   role: IRole;
   phoneNumber: string;
   profilePicture?: string;
@@ -27,14 +30,6 @@ export interface IUser {
   createdAt: string;
   updatedAt: string;
   id: string;
-}
-
-export interface IRole {
-  _id: string;
-  name: string;
-  groups: unknown[];
-  permissions: unknown[];
-  __v: number;
 }
 
 export interface IForgotPasswordInput {

@@ -1,7 +1,9 @@
 import { baseApi } from "@/redux/baseApi";
 import type { IOnboardUser, IUpdatedUser, IUpdateUser } from "./interface";
-import type { IResponse } from "../genericInterface";
+import type { IPaginatedResponse, IResponse } from "../genericInterface";
 import type { IUser } from "../auth";
+import type { IPaginationQuery } from "../interface";
+import { tagTypes } from "@/redux/baseApi/tagTypes";
 const baseName = "/user";
 
 export const userApi = baseApi.injectEndpoints({
@@ -12,13 +14,33 @@ export const userApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
+      invalidatesTags: [
+        { type: tagTypes.GET_STAFFS },
+        { type: tagTypes.GET_CUSTOMERS },
+      ],
     }),
 
-    getUsers: builder.query<IResponse<Array<IUser>>, void>({
-      query: () => ({
+    getCustomers: builder.query<IPaginatedResponse<IUser>, IPaginationQuery>({
+      query: (params) => ({
         url: `${baseName}`,
         method: "GET",
+        params,
       }),
+      providesTags: [{ type: tagTypes.GET_CUSTOMERS }],
+    }),
+
+    getStaffs: builder.query<
+      IPaginatedResponse<IUser>,
+      IPaginationQuery & {
+        roleId?: string;
+      }
+    >({
+      query: (params) => ({
+        url: `${baseName}/staffs`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: tagTypes.GET_STAFFS }],
     }),
 
     getUserById: builder.query<IResponse<IUser>, { id: string }>({
@@ -26,6 +48,7 @@ export const userApi = baseApi.injectEndpoints({
         url: `${baseName}/${params.id}`,
         method: "GET",
       }),
+      providesTags: [{ type: tagTypes.GET_USER }],
     }),
     updateUserById: builder.mutation<IResponse<IUpdatedUser>, IUpdateUser>({
       query: ({ id, user }) => ({
@@ -33,6 +56,10 @@ export const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: user,
       }),
+      invalidatesTags: [
+        { type: tagTypes.GET_STAFFS },
+        { type: tagTypes.GET_CUSTOMERS },
+      ],
     }),
 
     deleteUserById: builder.mutation<IResponse, { id: string }>({
@@ -40,13 +67,18 @@ export const userApi = baseApi.injectEndpoints({
         url: `${baseName}/${params.id}`,
         method: "DELETE",
       }),
+      invalidatesTags: [
+        { type: tagTypes.GET_STAFFS },
+        { type: tagTypes.GET_CUSTOMERS },
+      ],
     }),
   }),
 });
 
 export const {
   useOnboardUserMutation,
-  useGetUsersQuery,
+  useGetCustomersQuery,
+  useGetStaffsQuery,
   useGetUserByIdQuery,
   useUpdateUserByIdMutation,
   useDeleteUserByIdMutation,

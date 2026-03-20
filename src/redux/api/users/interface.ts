@@ -5,11 +5,6 @@ export interface IOnboardUser {
   firstName: string;
   lastName: string;
   role: string;
-  phoneNumber: string;
-  profilePicture: string;
-  state: string;
-  city: string;
-  country: string;
 }
 
 export interface IUpdateUser {

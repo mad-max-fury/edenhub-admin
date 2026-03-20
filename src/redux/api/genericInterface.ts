@@ -1,3 +1,5 @@
+import type { IPaginationMetadataResponse } from "./interface";
+
 export interface IResponse<T = null> {
   status: number;
   message: string;
@@ -14,19 +16,11 @@ export interface IApiError {
   stack?: string;
   success?: boolean;
 }
-export interface IPaginatedResponse<T> {
+export interface IPaginatedResponse<T = null> {
   message: string;
   data: {
-    docs: Array<T>;
-    totalDocs: number;
-    limit: number;
-    totalPages: number;
-    page: number;
-    pagingCounter: number;
-    hasPrevPage: boolean;
-    hasNextPage: boolean;
-    prevPage: number | null;
-    nextPage: number | null;
+    data: Array<T>;
+    metadata: IPaginationMetadataResponse;
   };
   status: number;
 }

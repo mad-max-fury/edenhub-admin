@@ -15,6 +15,7 @@ import { Typography } from "../typography";
 import { EmptyStateIcon, SearchErrorIcon } from "@/assets/svgs";
 import { Button } from "@/components/buttons/button";
 import { SortIcon } from "@/assets/svgs";
+import type { IPaginationMetadataResponse } from "@/redux/api/interface";
 
 interface TMTableProps<T> {
   columns: ColumnDef<T>[];
@@ -25,13 +26,14 @@ interface TMTableProps<T> {
   headerData?: React.ReactNode;
   additionalTitleData?: React.ReactNode;
 
+  metadata?: IPaginationMetadataResponse;
+
   page?: number;
   pageSize?: number;
   totalCount?: number;
+
   isServerSidePagination?: boolean;
-
   onPageChange?: (page: number) => void;
-
   searchParams?: string;
   hasPerformedQuery?: boolean;
   customEmptyStateMessage?: string;
@@ -47,9 +49,11 @@ export function TMTable<T>({
   title,
   headerData,
   additionalTitleData,
-  page = 1,
-  pageSize = 10,
-  totalCount = 0,
+
+  metadata,
+  page,
+  pageSize,
+  totalCount,
   isServerSidePagination = true,
   onPageChange,
   searchParams,
@@ -59,14 +63,20 @@ export function TMTable<T>({
   className,
   headerClassName,
 }: TMTableProps<T>) {
+  const activePage = metadata?.currentPage ?? page ?? 1;
+  const activePageSize = metadata?.pageSize ?? pageSize ?? 10;
+  const activeTotalCount = metadata?.totalCount ?? totalCount ?? 0;
+  const activeTotalPages =
+    metadata?.totalPages ?? Math.ceil(activeTotalCount / activePageSize);
+
   const table = useReactTable({
     data,
     columns,
-    pageCount: Math.ceil(totalCount / pageSize),
+    pageCount: activeTotalPages,
     state: {
       pagination: {
-        pageIndex: page - 1,
-        pageSize,
+        pageIndex: activePage - 1,
+        pageSize: activePageSize,
       },
     },
     manualPagination: isServerSidePagination,
@@ -75,38 +85,41 @@ export function TMTable<T>({
   });
 
   const rows = table.getRowModel().rows;
-  const showPagination = totalCount > pageSize;
+
+  const showPagination = activeTotalCount > activePageSize;
 
   return (
-    <div className={cn(" border border-N40", className)}>
+    <div className={cn("rounded-lg border border-N40 bg-white", className)}>
       {headerData}
 
       {title && (
-        <div className="flex items-center justify-between  border-N40 px-1 py-5">
+        <div className="flex items-center justify-between border-b border-N40 px-6 py-5">
           <Typography variant="h-m" fontWeight="bold">
             {title}
           </Typography>
-          {additionalTitleData}
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-4">
+            {additionalTitleData}
             <Button variant="secondary" shape="rounded" types="outline">
-              <SortIcon />{" "}
+              <SortIcon className="mr-2" /> Sort
             </Button>
           </div>
         </div>
       )}
 
-      <div className="relative w-full overflow-x-auto">
+      <div className="relative w-full overflow-hidden">
         {loading && <InfiniteProgressBar />}
 
-        <div className={noBottomSpace ? "" : "overflow-x-auto"}>
+        <div
+          className={cn("w-full overflow-x-auto", noBottomSpace ? "" : "pb-4")}
+        >
           <table className="w-full border-collapse">
-            <thead>
+            <thead className="bg-N20">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={cn(headerClassName)}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-4 text-left text-xs font-medium text-N700"
+                      className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-N700"
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -118,59 +131,66 @@ export function TMTable<T>({
               ))}
             </thead>
 
-            <tbody>
-              <AnimatePresence>
-                {rows.map((row) => (
-                  <motion.tr
-                    key={row.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 120 }}
-                    className="border-b last:border-none"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3 text-xs text-N900">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </td>
-                    ))}
-                  </motion.tr>
-                ))}
+            <tbody className="divide-y divide-N40">
+              <AnimatePresence mode="wait">
+                {rows.length > 0
+                  ? rows.map((row) => (
+                      <motion.tr
+                        key={row.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="transition-colors hover:bg-N10"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <td
+                            key={cell.id}
+                            className="whitespace-nowrap px-6 py-4 text-sm text-N900"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </td>
+                        ))}
+                      </motion.tr>
+                    ))
+                  : null}
               </AnimatePresence>
             </tbody>
           </table>
         </div>
 
         {!loading && rows.length === 0 && (
-          <div className="flex flex-col items-center justify-center p-6">
-            {hasPerformedQuery ? <SearchErrorIcon /> : <EmptyStateIcon />}
-            <p className="mt-2 text-sm text-gray-500">
+          <div className="flex flex-col items-center justify-center py-20">
+            {hasPerformedQuery ? (
+              <SearchErrorIcon className="h-[250px] w-[250px]" />
+            ) : (
+              <EmptyStateIcon className="h-[250px] w-[250px]" />
+            )}
+            <Typography variant="h-m" className="mt-4 text-N500">
               {hasPerformedQuery
-                ? `No result found${
-                    searchParams ? ` for "${searchParams}"` : ""
-                  }`
+                ? `No results found${searchParams ? ` for "${searchParams}"` : ""}`
                 : customEmptyStateMessage ||
-                  "Your request results will appear here"}
-            </p>
+                  "No records available at the moment."}
+            </Typography>
           </div>
         )}
 
-        {!noBottomSpace && showPagination && (
-          <div className="flex items-center justify-between border-t p-4">
+        {showPagination && (
+          <div className="flex items-center justify-between border-t border-N40 bg-N10 px-6 py-4">
             <div>
-              <Typography>
-                Showing {(page - 1) * pageSize + 1} –{" "}
-                {Math.min(page * pageSize, totalCount)} of <b>{totalCount}</b>
+              <Typography variant="p-s" className="text-N600">
+                Showing <b>{(activePage - 1) * activePageSize + 1}</b> –{" "}
+                <b>{Math.min(activePage * activePageSize, activeTotalCount)}</b>{" "}
+                of <b>{activeTotalCount}</b> results
               </Typography>
             </div>
 
             <PaginationElement
-              page={page}
-              total={Math.ceil(totalCount / pageSize)}
-              onChange={onPageChange!}
+              page={activePage}
+              total={activeTotalPages}
+              onChange={(p) => onPageChange?.(p)}
             />
           </div>
         )}

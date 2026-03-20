@@ -1,31 +1,31 @@
-import React from "react";
 import {
-  Avatar,
   Button,
+  notify,
   SMSelectDropDown,
   Typography,
   type OptionType,
 } from "@/components";
 
-import type {
-  ISelectItemProps,
-  ISelectItemPropsWithValueGeneric,
-} from "@/redux/api/interface";
+import type { ISelectItemProps } from "@/redux/api/interface";
 
 import { fieldSetterAndClearer } from "@/utils/helpers";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 
 import { assignRoleSchema } from "./schema";
-import type { UserRow } from "./tableRow";
+
+import type { IUser } from "@/redux/api";
+import { useUpdateUserByIdMutation } from "@/redux/api/users";
+import type { IApiError } from "@/redux/api/genericInterface";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 
 interface AssignRoleSchemaProps {
   role: ISelectItemProps;
 }
 interface IAssignRoleProps {
   closeModal: () => void;
-  editData?: UserRow | null;
-  allRoles: ISelectItemPropsWithValueGeneric[];
+  editData?: IUser | null;
+  allRoles: ISelectItemProps[];
 }
 
 export const AssignRole = ({
@@ -33,14 +33,10 @@ export const AssignRole = ({
   editData,
   allRoles,
 }: IAssignRoleProps) => {
-  const adjustedRoleOptions = allRoles.map((role) => ({
-    label: role.label,
-    value: role.label,
-  }));
-  // const [addUserToRole, { isLoading }] = useAddUserToRoleMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserByIdMutation();
   const employeeOptions: OptionType[] = [
     {
-      label: `${editData?.fullName}`,
+      label: `${editData?.firstName}   ${editData?.lastName}`,
       value: editData?.id as string,
     },
   ];
@@ -54,29 +50,32 @@ export const AssignRole = ({
   } = useForm<AssignRoleSchemaProps>({
     resolver: yupResolver(assignRoleSchema),
     defaultValues: {
-      role: { label: String(editData?.role), value: String(editData?.role) },
+      role: {
+        label: String(editData?.role.name),
+        value: String(editData?.role._id),
+      },
     },
   });
 
   const onSubmit = (values: AssignRoleSchemaProps) => {
-    // addUserToRole({
-    //   userName: String(editData?.email),
-    //   role: values.role.label,
-    // })
-    //   .unwrap()
-    //   .then(() => {
-    //     notify.success({
-    //       message: `Role Assigned`,
-    //       subtitle: `You have successfully assigned ${values.role.label} role to ${editData?.firstname} ${editData?.lastname}`,
-    //     });
-    //     closeModal();
-    //   })
-    //   .catch((err: IApiError) => {
-    //     notify.error({
-    //       message: "Action failed",
-    //       subtitle: getErrorMessage(err),
-    //     });
-    //   });
+    updateUser({
+      id: editData?._id ?? "",
+      user: { role: values.role.value },
+    })
+      .unwrap()
+      .then(() => {
+        notify.success({
+          message: `Role Updated`,
+          subtitle: `You have successfully updated ${editData?.role.name} role to ${values.role.label} `,
+        });
+        closeModal();
+      })
+      .catch((err: IApiError) => {
+        notify.error({
+          message: "Action failed",
+          subtitle: getErrorMessage(err),
+        });
+      });
   };
 
   return (
@@ -92,7 +91,7 @@ export const AssignRole = ({
             color={"N700"}
             className={`col-span-1 my-auto cursor-pointer mmd:my-[unset]`}
           >
-            Employee
+            Staff
           </Typography>
           <div className="col-span-3">
             <SMSelectDropDown
@@ -117,7 +116,7 @@ export const AssignRole = ({
           <div className="col-span-3 grid grid-cols-1 gap-4">
             <div>
               <SMSelectDropDown
-                options={adjustedRoleOptions}
+                options={allRoles}
                 varient="simple"
                 onChange={(selectedOption) => {
                   fieldSetterAndClearer({
@@ -146,11 +145,7 @@ export const AssignRole = ({
         >
           Cancel
         </Button>
-        <Button
-          variant={"primary"}
-          className="msm:w-full"
-          // loading={isLoading}
-        >
+        <Button variant={"primary"} className="msm:w-full" loading={isUpdating}>
           {editData ? "Save" : "Assign Role"}
         </Button>
       </div>

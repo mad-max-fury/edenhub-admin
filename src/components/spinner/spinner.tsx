@@ -15,7 +15,7 @@ export const Spinner = ({
       <div
         className={cn(
           "inline-block h-10 w-10 animate-spin rounded-full border-t-2 border-[inherit]",
-          color ?? `border-B400`
+          color ?? `border-BR400`,
         )}
         role="status"
       >

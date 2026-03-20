@@ -58,8 +58,6 @@ const ProfileSettings = () => {
         user: data,
       }).unwrap();
 
-      console.log(response);
-
       dispatch(updateUserAction(response.data.data));
 
       notify.success({

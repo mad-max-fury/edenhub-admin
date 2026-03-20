@@ -68,7 +68,7 @@ const UserManagementLayout = () => {
         </Typography>
       </div>
 
-      <div className="relative border-b border-N30">
+      <div className="relative ">
         <Tab tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
       </div>
     </div>
