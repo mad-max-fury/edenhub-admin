@@ -4,12 +4,13 @@ import { Button, Checkbox, notify, PageLoader } from "@/components";
 import { getErrorMessage } from "@/utils/getErrorMessges";
 
 import AccordionWrapper from "@/components/accordions/AccordionWrapper";
-import type { UserRow } from "./tableRow";
+
+import type { IUser } from "@/redux/api";
 
 interface IAssignClaimProps {
   closeModal: () => void;
   toggleShowTable?: () => void;
-  editData?: UserRow | null;
+  editData?: IUser | null;
 }
 
 export const AssignClaim = ({ closeModal, editData }: IAssignClaimProps) => {

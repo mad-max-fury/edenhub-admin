@@ -1,12 +1,12 @@
 import * as yup from "yup";
 
 export const addUserSchema = yup.object().shape({
-  fullName: yup.string().required("Full name is required"),
+  firstName: yup.string().required("First name is required"),
+  lastName: yup.string().required("Last name is required"),
   email: yup
     .string()
     .email("Invalid email address")
     .required("Email is required"),
-  staffId: yup.string().required("Staff ID is required"),
   role: yup
     .object()
     .shape({

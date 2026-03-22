@@ -5,13 +5,13 @@ import { getErrorMessage } from "@/utils/getErrorMessges";
 import ImageWrapper from "../imageLoader/ImageLoader";
 
 interface NetworkErrorProps {
-  error: IApiError;
+  error: unknown;
   refetch: () => void;
   isFetching: boolean;
 }
 
 const NetworkError = ({ error, refetch, isFetching }: NetworkErrorProps) => {
-  const is403Error = error?.status === 403;
+  const is403Error = (error as IApiError)?.error?.statusCode === 403;
 
   const handleRetryClick = () => {
     refetch();

@@ -1,5 +1,6 @@
 export const cookieValues = {
-  token: `re-token`,
+  token: `Ed-dev-token`,
+  refreshToken: "refreshToken",
 };
 
 export enum PAGE_SIZE {

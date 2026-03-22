@@ -1,3 +1,4 @@
+import NotificationContainer from "./components/notifications/notificationContainer";
 import { ReduxProvider } from "./redux";
 import RouterProviderWrapper from "./router";
 
@@ -6,6 +7,7 @@ function App() {
     <main>
       <ReduxProvider>
         <RouterProviderWrapper />
+        <NotificationContainer />
       </ReduxProvider>
     </main>
   );

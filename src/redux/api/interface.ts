@@ -7,11 +7,11 @@ export interface IPaginationQuery {
   searchTerm?: string;
 }
 
-export interface IPaginationResponse {
-  currentPage: number;
-  totalPages: number;
+export interface IPaginationMetadataResponse {
   pageSize: number;
+  currentPage: number;
   totalCount: number;
+  totalPages: number;
   hasPrevious: boolean;
   hasNext: boolean;
 }
@@ -31,9 +31,9 @@ export interface ISelectItemPropsWithValueGeneric {
   label: string;
 }
 
-export interface ISelectItemProps
-  extends Omit<ISelectItemPropsWithValueGeneric, "value"> {
+export interface ISelectItemProps extends Omit<
+  ISelectItemPropsWithValueGeneric,
+  "value"
+> {
   value: string;
 }
-
-export const ATTESTATION_DOCUMENT_ENUM = 13;

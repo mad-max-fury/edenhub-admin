@@ -103,7 +103,11 @@ export const ButtonDropdown = ({
                 {item.icon && (
                   <span className="text-gray-400">{item.icon}</span>
                 )}
-                <Typography variant="p-s" color={item.textColor || "N900"}>
+                <Typography
+                  variant="p-s"
+                  color={item.textColor || "N900"}
+                  className=" capitalize"
+                >
                   {item.name}
                 </Typography>
               </button>

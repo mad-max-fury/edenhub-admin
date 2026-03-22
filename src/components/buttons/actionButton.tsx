@@ -6,7 +6,7 @@ interface IActionButtonProps {
   onClick: () => void;
 }
 const buttonStyles = {
-  info: "hover:bg-B50 text-B400",
+  info: "hover:bg-BR50 text-BR500",
   danger: "hover:bg-R50 text-R400",
 };
 const icons = {
