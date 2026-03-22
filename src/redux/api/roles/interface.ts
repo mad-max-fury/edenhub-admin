@@ -1,34 +1,30 @@
-export interface IPermission {
-  _id: string;
-  name: string;
-  endpoint: string;
-  method: string;
-  resource: string;
-  action: string;
-  isActive: boolean;
-}
-export interface IGroup {
-  _id: string;
-  name: string;
-  path: string;
-  order: number;
-  icon?: string;
-  permissions: Partial<IPermission[]>;
-}
+import type { IGroup } from "../groups";
+import type { IPermission } from "../permissions";
+
 export interface IRole {
   _id: string;
   name: string;
-  permissions: Partial<IPermission[]>;
-  groups: Partial<IGroup[]>;
+
+  groups: Array<{
+    id: IGroup;
+    permissionsId: string[];
+  }>;
+  permissions: IPermission[];
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ICreateRole {
   name: string;
-  groups: Array<string>;
-  permissions: Array<string>;
+  groups: Array<{
+    id: string;
+    permissionsId: string[];
+  }>;
+  permissions: string[];
   isActive: boolean;
 }
 
-export interface IUpdateRole extends ICreateRole {
+export interface IUpdateRole extends Partial<ICreateRole> {
   id: string;
 }

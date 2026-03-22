@@ -7,38 +7,49 @@ import {
   Modal,
   ActionButton,
   ConfirmationModal,
+  NetworkError,
+  Spinner,
+  notify,
 } from "@/components";
 import type { ColumnDef } from "@tanstack/react-table";
 import EditOrCreateRole from "./EditOrCreateRole";
-
-type RoleRow = {
-  id: string;
-  sn: number;
-  name: string;
-  permissions: number;
-  staffCount: number;
-};
-
-const MOCK_ROLES: RoleRow[] = [
-  { id: "1", sn: 1, name: "Admin", permissions: 12, staffCount: 4 },
-  { id: "2", sn: 2, name: "Super Admin", permissions: 8, staffCount: 1 },
-  { id: "3", sn: 3, name: "Human Resource", permissions: 0, staffCount: 0 },
-];
+import {
+  useDeleteRoleByIdMutation,
+  useGetRolesQuery,
+  type IRole,
+} from "@/redux/api/roles";
+import { PAGE_SIZE } from "@/constants/data";
+import type { IPaginationMetadataResponse } from "@/redux/api/interface";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 
 const RolesManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<RoleRow | null>(null);
+  const [selectedRole, setSelectedRole] = useState<IRole | undefined>(
+    undefined,
+  );
   const [openDelete, setOpenDelete] = useState(false);
 
-  const roleColumns: ColumnDef<RoleRow>[] = [
+  const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleByIdMutation();
+
+  const pageSize = PAGE_SIZE.md;
+
+  const { data, isError, isLoading, error, refetch, isFetching } =
+    useGetRolesQuery({
+      pageNumber,
+      searchTerm,
+      pageSize,
+    });
+
+  const roleColumns: ColumnDef<IRole>[] = [
     {
       header: "SN",
-      accessorKey: "sn",
-      cell: ({ row }) => (
-        <Typography variant="p-s" color="N700">
-          {row.original.sn}
-        </Typography>
+      accessorKey: "id",
+      cell: ({ cell: { row } }) => (
+        <div>
+          <span>{pageSize * (pageNumber - 1) + (row.index + 1)}</span>
+        </div>
       ),
     },
     {
@@ -55,20 +66,20 @@ const RolesManagement = () => {
       accessorKey: "permissions",
       cell: ({ row }) => (
         <Typography variant="p-s" color="N600">
-          {row.original.permissions}
+          {row.original.permissions.length}
         </Typography>
       ),
     },
     {
-      header: "Staff",
-      accessorKey: "staffCount",
+      header: "Groups",
+      accessorKey: "groups",
       cell: ({ row }) => (
         <Typography
           variant="p-s"
           color="B400"
           className="underline cursor-pointer"
         >
-          {row.original.staffCount}
+          {row.original.groups.length}
         </Typography>
       ),
     },
@@ -87,7 +98,6 @@ const RolesManagement = () => {
 
           <ActionButton
             variant="danger"
-            disabled={Number(row.original.staffCount) !== 0}
             onClick={() => {
               setSelectedRole(row.original);
               setOpenDelete(true);
@@ -98,11 +108,37 @@ const RolesManagement = () => {
     },
   ];
 
-  const filteredRoles = useMemo(() => {
-    return MOCK_ROLES.filter((role) =>
-      role.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  if (isError) {
+    return (
+      <div className="h-[70vh] w-full">
+        <NetworkError isFetching={isFetching} error={error} refetch={refetch} />
+      </div>
     );
-  }, [searchTerm]);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-[70vh] w-full">
+        <Spinner />;
+      </div>
+    );
+  }
+
+  const handleDeleteRole = async (id: string) => {
+    try {
+      await deleteRole({ id: id }).unwrap();
+      notify.success({
+        message: `Deleted Successfully`,
+        subtitle: `You have successfully deleted ${selectedRole?.name} `,
+      });
+      setOpenDelete(false);
+    } catch (err) {
+      notify.error({
+        message: "Action failed",
+        subtitle: getErrorMessage(err),
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
@@ -118,7 +154,7 @@ const RolesManagement = () => {
         <Button
           size="sm"
           onClick={() => {
-            setSelectedRole(null);
+            setSelectedRole(undefined);
             setIsModalOpen(true);
           }}
         >
@@ -129,10 +165,10 @@ const RolesManagement = () => {
         </Button>
       </div>
       <section className="bg-white border border-N30  ">
-        <TMTable<RoleRow>
+        <TMTable<IRole>
           columns={roleColumns}
-          data={filteredRoles}
-          loading={false}
+          data={data?.data.data ?? []}
+          loading={isFetching}
           headerData={
             <div className="border-b border-N30 px-6 py-4 flex justify-between items-center">
               <div className="relative w-full max-w-[300px]">
@@ -149,8 +185,8 @@ const RolesManagement = () => {
           }
           className="border-none"
           headerClassName="bg-N10 text-N500 uppercase tracking-wider text-[11px] font-bold"
-          pageSize={10}
-          totalCount={filteredRoles.length}
+          metadata={data?.data.metadata as IPaginationMetadataResponse}
+          hasPerformedQuery={searchTerm.length > 0}
         />
       </section>
 
@@ -163,16 +199,16 @@ const RolesManagement = () => {
         <EditOrCreateRole
           onClose={() => {
             setIsModalOpen(false);
-            setSelectedRole(null);
+            setSelectedRole(undefined);
           }}
-          initialData={selectedRole ? { name: "", permissions: [] } : undefined}
+          initialData={selectedRole}
         />
       </Modal>
 
       <ConfirmationModal
         isOpen={openDelete}
         closeModal={() => setOpenDelete(false)}
-        handleClick={() => setOpenDelete(false)}
+        handleClick={() => handleDeleteRole(selectedRole?._id as string)}
         formTitle="Delete Role"
         message={
           <p>
@@ -181,7 +217,7 @@ const RolesManagement = () => {
             cannot be undone.
           </p>
         }
-        isLoading={false}
+        isLoading={isDeleting}
         type={"delete"}
         buttonLabel="Yes, Delete"
       />

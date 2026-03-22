@@ -6,25 +6,59 @@ import {
   TMTable,
   Typography,
 } from "@/components";
+import { Breadcrumbs, type Crumb } from "@/components/breadCrumbs/breadCrumbs";
 import { PAGE_SIZE } from "@/constants/data";
-import { useGetGroupsQuery, type IGroup } from "@/redux/api/groups";
+import { AuthRouteConfig } from "@/constants/routes";
+import { useGetPermissionsByGroupIdQuery } from "@/redux/api/groups";
 import type { IPaginationMetadataResponse } from "@/redux/api/interface";
-import { Search } from "lucide-react";
-import { useState } from "react";
-import { groupColumns } from "./tableRow";
-import { AddOrEditMenu } from "./AddOrEditMenu";
 
-const MenusMangements = () => {
+import { Search } from "lucide-react";
+
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { permissionsColumns } from "./permissionTableRow";
+import { AddOMenuPermissions } from "./AddOMenuPermissions";
+import {
+  useGetPermissionsUnpaginatedQuery,
+  type IPermission,
+} from "@/redux/api/permissions";
+import { formatSelectItems } from "@/utils/helpers";
+
+const MenuId = () => {
+  const loc = useLocation();
+  const name = loc?.state?.name ?? "";
+  const id = loc?.state?.id ?? "";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  const { data: allPermissionsData } = useGetPermissionsUnpaginatedQuery();
+
   const { data, isError, isLoading, error, refetch, isFetching } =
-    useGetGroupsQuery({
+    useGetPermissionsByGroupIdQuery({
       pageNumber,
       searchTerm,
       pageSize: PAGE_SIZE.md,
+      id,
     });
+
+  const crumbs: Crumb[] = [
+    {
+      name: "Manage Menu",
+      path: AuthRouteConfig.USER_MANAGEMENT_MANAGE_MENU,
+    },
+    {
+      name,
+      path: AuthRouteConfig.USER_MANAGEMENT_MANAGE_MENU + `/${id}`,
+    },
+  ];
+
+  const allPermissions = formatSelectItems(
+    allPermissionsData?.data ?? [],
+    "name",
+    "_id",
+  );
 
   if (isError) {
     return (
@@ -41,26 +75,26 @@ const MenusMangements = () => {
       </div>
     );
   }
-
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="px-1">
+          <Breadcrumbs crumbs={crumbs} />
           <Typography variant="h-m" fontWeight="bold">
-            Manage Menu
+            {name}
           </Typography>
         </div>
         <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
           <div className="flex items-center gap-2">
-            <span className="text-xs ">Add Menu</span>
+            <span className="text-xs ">Add Permission</span>
           </div>
         </Button>
       </div>
 
       <section>
-        <TMTable<IGroup>
-          columns={groupColumns(PAGE_SIZE.md, pageNumber)}
-          data={data?.data.data as IGroup[]}
+        <TMTable<IPermission>
+          columns={permissionsColumns(PAGE_SIZE.md, pageNumber, id)}
+          data={data?.data.data as IPermission[]}
           loading={isFetching || isLoading}
           headerData={
             <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 gap-4">
@@ -81,20 +115,24 @@ const MenusMangements = () => {
           className="border-none"
           headerClassName="bg-N10 text-N700 uppercase tracking-wider text-[11px] font-bold"
           metadata={data?.data.metadata as IPaginationMetadataResponse}
-          hasPerformedQuery={searchTerm.length > 0}
+          hasPerformedQuery={searchTerm?.length > 0}
         />
 
         <Modal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          title="Add or Edit Menu"
+          title="Add Permissions"
           mobileLayoutType="full"
         >
-          <AddOrEditMenu closeModal={() => setIsAddModalOpen(false)} />
+          <AddOMenuPermissions
+            groupId={id}
+            allPermission={allPermissions}
+            closeModal={() => setIsAddModalOpen(false)}
+          />
         </Modal>
       </section>
     </div>
   );
 };
 
-export default MenusMangements;
+export default MenuId;

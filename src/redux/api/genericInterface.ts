@@ -19,7 +19,7 @@ export interface IApiError {
 export interface IPaginatedResponse<T = null> {
   message: string;
   data: {
-    data: Array<T>;
+    data: T;
     metadata: IPaginationMetadataResponse;
   };
   status: number;

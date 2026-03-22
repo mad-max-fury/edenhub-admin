@@ -35,6 +35,9 @@ const MenusManagement = lazy(
   () => import("@/pages/admin/user-management/menus"),
 );
 
+const MenuManagement = lazy(
+  () => import("@/pages/admin/user-management/menus/menuId"),
+);
 const AuditTrail = lazy(() => import("@/pages/admin/audit"));
 const SettingsLayout = lazy(() => import("@/pages/admin/settings/layout"));
 const ProfileSettings = lazy(() => import("@/pages/admin/settings/profile"));
@@ -89,6 +92,10 @@ export const router = createBrowserRouter([
               {
                 path: "menus",
                 element: withSuspense(MenusManagement),
+              },
+              {
+                path: "menus/:id",
+                element: withSuspense(MenuManagement),
               },
             ],
           },

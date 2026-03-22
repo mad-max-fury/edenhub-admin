@@ -75,7 +75,7 @@ export const userColumns = (roles: ISelectItemProps[]) => {
         const claims = row.original.role.permissions;
 
         return (
-          <div className="flex items-center gap-2">{claims.length ?? 0}</div>
+          <div className="flex items-center gap-2">{claims?.length ?? 0}</div>
         );
       },
     },

@@ -21,7 +21,7 @@ const UserManagementLayout = () => {
         ),
       },
       {
-        label: "ROLES & PERMISSIONS",
+        label: "ROLES",
         query: "roles",
         path: `${AuthRouteConfig.USER_MANAGEMENT}/roles`,
         content: (
@@ -31,8 +31,8 @@ const UserManagementLayout = () => {
         ),
       },
       {
-        label: "MENU ACCESS",
-        query: "menus",
+        label: "Group ACCESS",
+        query: "groups",
         path: `${AuthRouteConfig.USER_MANAGEMENT}/menus`,
         content: (
           <section className="mt-2">

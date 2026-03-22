@@ -20,7 +20,7 @@ export const userApi = baseApi.injectEndpoints({
       ],
     }),
 
-    getCustomers: builder.query<IPaginatedResponse<IUser>, IPaginationQuery>({
+    getCustomers: builder.query<IPaginatedResponse<IUser[]>, IPaginationQuery>({
       query: (params) => ({
         url: `${baseName}`,
         method: "GET",
@@ -30,7 +30,7 @@ export const userApi = baseApi.injectEndpoints({
     }),
 
     getStaffs: builder.query<
-      IPaginatedResponse<IUser>,
+      IPaginatedResponse<IUser[]>,
       IPaginationQuery & {
         roleId?: string;
       }

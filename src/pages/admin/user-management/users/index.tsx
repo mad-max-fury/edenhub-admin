@@ -36,7 +36,7 @@ const Users = () => {
       pageSize: PAGE_SIZE.md,
       roleId: activeRole === "" ? undefined : activeRole,
     });
-
+  console.log(error);
   if (isError) {
     return (
       <div className="h-[70vh] w-full">
