@@ -9,6 +9,8 @@ import axios, {
 import Cookies from "js-cookie";
 
 import { getPreloadedState } from "../getPreloadedState";
+import type { IApiError } from "../api/genericInterface";
+import { cookieValues } from "@/constants/data";
 
 export const axiosInstance = axios.create();
 
@@ -25,9 +27,8 @@ axiosInstance.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
-
 export const axiosBaseQuery =
   ({
     baseUrl = "",
@@ -56,30 +57,60 @@ export const axiosBaseQuery =
         data,
         headers: { ...baseHeaders, ...headers },
         responseType: responseType || "json",
+        withCredentials: true,
       });
 
       return { data: result.data };
     } catch (axiosError) {
       const err = axiosError as AxiosError;
+      if (err.response?.status === 403) {
+        try {
+          const refreshResponse = await axios.post(
+            baseUrl + "/auth/refresh-token",
+            { refreshToken: getPreloadedState().auth.refresh_token },
+            { withCredentials: true },
+          );
 
-      if (err.response?.status === 401) {
-        const allCookies = Cookies.get();
-        Object.keys(allCookies).forEach((key) => {
-          Cookies.remove(key);
-        });
+          const newAccessToken = refreshResponse.data.accessToken;
 
-        window.location.href = AuthRouteConfig.LOGIN;
+          const state = getPreloadedState();
+          state.auth.access_token = newAccessToken;
+          Cookies.set(cookieValues.token, newAccessToken);
+
+          const retryResult = await axiosInstance({
+            url: baseUrl + url,
+            method,
+            params,
+            data,
+            headers: {
+              ...baseHeaders,
+              ...headers,
+              Authorization: `Bearer ${newAccessToken}`,
+            },
+            withCredentials: true,
+          });
+
+          return { data: retryResult.data };
+        } catch (refreshError) {
+          Cookies.remove("persist:root");
+          window.location.href = AuthRouteConfig.LOGIN;
+          return {
+            error: {
+              status: 403,
+              message: "Session expired. Please login again.",
+            },
+          };
+        }
       }
-
-      // if (err.response?.status === 403) {
-      //   window.location.href = AuthRouteConfig.NO_ACCESS;
-      // }
 
       return {
         error: {
-          status: err.response?.status,
-          error: err.message,
-          ...(typeof err.response?.data === "object" ? err.response.data : {}),
+          status: err.response?.status ?? 500,
+          message:
+            (err.response?.data as IApiError)?.message ??
+            err.message ??
+            "Something went wrong",
+          data: err.response?.data ?? null,
         },
       };
     }

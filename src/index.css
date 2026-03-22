@@ -120,46 +120,50 @@
   }
 }
 
-/** Used to define container behavior: width, position: fixed etc... **/
 .Toastify__toast-container {
-  border-radius: 8px;
-  min-width: 450px !important;
-  background: transparent !important;
-
   z-index: 1000000000 !important;
 }
 
 .Toastify__toast {
-  width: 100%;
+  border-radius: 8px !important;
   padding: 16px !important;
-  /* height: 94px; */
-  margin-bottom: 0px;
+  min-height: 80px;
+  margin-bottom: 12px;
+  display: flex !important;
+  align-items: flex-start !important;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08);
-  background-color: var(--color-N0) !important;
-}
-
-.Toastify__toast.Toastify__toast--error {
-  background-color: #fef6f6 !important;
-}
-
-.Toastify__toast.Toastify__toast--success {
-  background-color: #f4fbf7 !important;
-}
-.Toastify__toast.Toastify__toast--info {
-  background-color: var(--color-N0) !important;
 }
 
 .Toastify__toast-body {
-  gap: 24px;
-  padding: 8px !important;
-  width: calc(100% - 24px);
+  margin: 0 !important;
+  padding: 0 24px 0 16px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px;
 }
 
 .Toastify__toast-icon {
-  width: 28px !important;
-  height: 28px;
-  -webkit-margin-end: 0px !important;
-  margin-inline-end: 0px !important;
+  flex-shrink: 0;
+}
+
+.Toastify__toast--error {
+  background-color: #fef6f6 !important;
+  border: 1px solid var(--color-R75);
+}
+
+.Toastify__toast--success {
+  background-color: #f4fbf7 !important;
+  border: 1px solid var(--color-G75);
+}
+
+.Toastify__toast--warning {
+  background-color: var(--color-Y50) !important;
+  border: 1px solid var(--color-Y75);
+}
+
+.Toastify__toast--info {
+  background-color: var(--color-N0) !important;
+  border: 1px solid var(--color-N40);
 }
 
 .container {

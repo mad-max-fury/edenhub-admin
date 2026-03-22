@@ -1,64 +1,82 @@
 import {
   toast,
   type Id,
-  type ToastContent,
   type ToastOptions,
   type UpdateOptions,
 } from "react-toastify";
+import { CheckCircle2, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import NotificationMsg, { type NotificationType } from "./NotificationMsg";
 
-import { NotifErrorIcon, NotifSuccessIcon } from "../../assets/svgs";
-import NotificationMsg from "./NotificationMsg";
-
-// Notifications props
-interface NotifProps extends ToastOptions<object> {
-  content?: ToastContent<unknown>;
+interface NotifProps extends ToastOptions {
   message?: string;
   subtitle?: string;
 }
 
-// Update notifications props
-interface UpdateNotifProps extends UpdateOptions<object> {
-  content?: ToastContent<unknown>;
-  message?: string;
-  subtitle?: string;
-}
+const Icons = {
+  success: <CheckCircle2 className="text-[var(--color-G300)]" size={28} />,
+  error: <AlertCircle className="text-[var(--color-R300)]" size={28} />,
+  warning: <AlertTriangle className="text-[var(--color-Y300)]" size={28} />,
+  info: <Info className="text-[var(--color-B300)]" size={28} />,
+};
 
-// Success notifications trigger
-const success = ({ content, message, subtitle, ...options }: NotifProps) =>
+const success = ({ message, subtitle, ...options }: NotifProps) =>
   toast.success(
-    content || <NotificationMsg message={message} subtitle={subtitle} />,
+    <NotificationMsg message={message} subtitle={subtitle} type="success" />,
     {
-      icon: <NotifSuccessIcon className="!h-7 !w-7" />,
+      icon: Icons.success,
       ...options,
-    }
+    },
   );
 
-// Error notifications trigger
-const error = ({ content, message, subtitle, ...options }: NotifProps) =>
+const error = ({ message, subtitle, ...options }: NotifProps) =>
   toast.error(
-    content || (
-      <NotificationMsg message={message} subtitle={subtitle} type="error" />
-    ),
+    <NotificationMsg message={message} subtitle={subtitle} type="error" />,
     {
-      icon: <NotifErrorIcon className="!h-7 !w-7" />,
+      icon: Icons.error,
       ...options,
-    }
+    },
   );
 
-// Update notifications trigger
+const warning = ({ message, subtitle, ...options }: NotifProps) =>
+  toast.warn(
+    <NotificationMsg message={message} subtitle={subtitle} type="warning" />,
+    {
+      icon: Icons.warning,
+      ...options,
+    },
+  );
+
+const info = ({ message, subtitle, ...options }: NotifProps) =>
+  toast.info(
+    <NotificationMsg message={message} subtitle={subtitle} type="info" />,
+    {
+      icon: Icons.info,
+      ...options,
+    },
+  );
+
 const update = (
   id: Id,
-  { content, message, subtitle, type, ...props }: UpdateNotifProps
+  {
+    message,
+    subtitle,
+    type = "success",
+    ...props
+  }: UpdateOptions & NotifProps & { type?: NotificationType },
 ) =>
   toast.update(id, {
-    render: content || (
-      <NotificationMsg message={message} subtitle={subtitle} />
+    render: (
+      <NotificationMsg message={message} subtitle={subtitle} type={type} />
     ),
-    icon: type === "error" ? <NotifErrorIcon className="!h-7 !w-7" /> : <NotifSuccessIcon className="!h-7 !w-7" />,
+    icon: Icons[type],
     ...props,
   });
 
-// Dismiss all notifications
-const dismissAll = () => toast.dismiss();
-
-export const notify = { success, error, update, dismissAll };
+export const notify = {
+  success,
+  error,
+  warning,
+  info,
+  update,
+  dismissAll: toast.dismiss,
+};

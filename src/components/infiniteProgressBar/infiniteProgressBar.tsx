@@ -3,7 +3,7 @@ export const InfiniteProgressBar = () => {
     <div
       className={`progress infinite-progress-bar absolute z-[2] flex h-[2px] w-full overflow-hidden bg-transparent`}
     >
-      <div role="progressbar" className={`w-full animate-move bg-B300`} />
+      <div role="progressbar" className={`w-full animate-move bg-BR300`} />
     </div>
   );
 };

@@ -181,11 +181,16 @@ const config: Config = {
       },
       animation: {
         move: "move 2s linear infinite",
+        spin: "spin 1s linear infinite",
       },
       keyframes: {
         move: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(calc(5 / 2 * 100%))" },
+        },
+        spin: {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
         },
       },
     },
