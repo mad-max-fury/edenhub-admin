@@ -20,6 +20,12 @@ const Products = lazy(() => import("@/pages/admin/products"));
 const ProductDetails = lazy(
   () => import("@/pages/admin/products/productDetails"),
 );
+const Categories = lazy(() => import("@/pages/admin/categories"));
+const ProductForm = lazy(() =>
+  import("@/pages/admin/products/create").then((m) => ({
+    default: m.ProductFormPage,
+  })),
+);
 const Orders = lazy(() => import("@/pages/admin/orders"));
 
 const Order = lazy(() => import("@/pages/admin/orders/order"));
@@ -39,6 +45,7 @@ const MenuManagement = lazy(
   () => import("@/pages/admin/user-management/menus/menuId"),
 );
 const AuditTrail = lazy(() => import("@/pages/admin/audit"));
+const Notifications = lazy(() => import("@/pages/admin/notifications"));
 const SettingsLayout = lazy(() => import("@/pages/admin/settings/layout"));
 const ProfileSettings = lazy(() => import("@/pages/admin/settings/profile"));
 const NotificationSettings = lazy(
@@ -75,7 +82,13 @@ export const router = createBrowserRouter([
           { index: true, element: withSuspense(Dashboard) },
           { path: "analytics", element: withSuspense(Analytics) },
           { path: "products", element: withSuspense(Products) },
+          { path: "products/create", element: withSuspense(ProductForm) },
+          {
+            path: "products/:id/edit",
+            element: <Suspense fallback={<PageLoader />}>{<ProductForm isEdit />}</Suspense>,
+          },
           { path: "products/:id", element: withSuspense(ProductDetails) },
+          { path: "categories", element: withSuspense(Categories) },
           { path: "orders", element: withSuspense(Orders) },
           { path: "orders/:id", element: withSuspense(Order) },
           { path: "customers", element: withSuspense(Customers) },
@@ -100,6 +113,7 @@ export const router = createBrowserRouter([
             ],
           },
           { path: "audit-trail", element: withSuspense(AuditTrail) },
+          { path: "notifications", element: withSuspense(Notifications) },
           {
             path: "settings",
             element: withSuspense(SettingsLayout),

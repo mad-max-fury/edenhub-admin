@@ -8,10 +8,10 @@ import ImageWrapper from "@/components/imageLoader/ImageLoader";
 interface Order {
   id: string;
   date: string;
-  payment: "Success" | "Pending";
+  payment: string;
   total: string;
   items: string;
-  fulfillment: "Fulfilled" | "Unfulfilled";
+  fulfillment: string;
 }
 
 interface CustomerPreviewProps {

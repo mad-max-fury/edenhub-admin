@@ -6,6 +6,7 @@ import {
   AnalyticsIcon,
   OrdersIcon,
   ProductsIcon,
+  CategoriesIcon,
   CustomersIcon,
   SettingsIcon,
   AuditTrailIcon,
@@ -19,9 +20,12 @@ import { AuthRouteConfig } from "@/constants/routes";
 import { Drawer } from "@/components";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/stores";
+import { useGetOrderStatsQuery } from "@/redux/api/orders";
 
 const AdminLayout = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const { data: orderStats } = useGetOrderStatsQuery();
+  const newOrders = orderStats?.data?.unfulfilled ?? 0;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -44,10 +48,15 @@ const AdminLayout = () => {
       },
       { name: "Products", icon: ProductsIcon, path: AuthRouteConfig.PRODUCTS },
       {
+        name: "Categories",
+        icon: CategoriesIcon,
+        path: AuthRouteConfig.CATEGORIES,
+      },
+      {
         name: "Orders",
         icon: OrdersIcon,
         path: AuthRouteConfig.ORDERS,
-        badge: 2,
+        badge: newOrders || null,
       },
       {
         name: "Customers",
@@ -66,7 +75,7 @@ const AdminLayout = () => {
       },
       { name: "Settings", icon: SettingsIcon, path: AuthRouteConfig.SETTINGS },
     ],
-    [],
+    [newOrders],
   );
 
   const activeItem = useMemo(() => {

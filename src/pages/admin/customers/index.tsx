@@ -1,114 +1,121 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  Filter,
-  MoreHorizontal,
-  Download,
-  UserPlus,
-  Trash2,
-  FileText,
-} from "lucide-react";
-import {
-  Typography,
-  TMTable,
-  ButtonDropdown,
-  ConfirmationModal,
-} from "@/components";
-import { customerColumns, type CustomerRow } from "./components/tableRow";
+import { useMemo, useState } from "react";
+import { Search, Download } from "lucide-react";
+import { Typography, TMTable, Button, NetworkError } from "@/components";
 import Card from "@/components/Cards/Card";
+import { customerColumns, type CustomerRow } from "./components/tableRow";
+import {
+  useGetCustomersQuery,
+  useGetCustomerStatsQuery,
+} from "@/redux/api/users";
+import type { IUser } from "@/redux/api/auth";
+import { PAGE_SIZE } from "@/constants/data";
+import type { IPaginationMetadataResponse } from "@/redux/api/interface";
 
-const MOCK_CUSTOMERS: CustomerRow[] = Array(14)
-  .fill(null)
-  .map((_, index) => ({
-    name: index % 2 === 0 ? "Prince Chijioke" : "Bessie Cooper",
-    avatar: `https://i.pravatar.cc/150?u=${index}`,
-    joinedOn: "12 Nov, 2024",
-    email:
-      index % 2 === 0
-        ? "princeugbuta17@gmail.com"
-        : "bessie.cooper@example.com",
-    phone: "+234 903 828 3447",
-    address: "4517 Washington Ave. Manchester, Kentucky 39495, United Kingdom",
-    orders: 21 + index,
-    price: "10,944.00",
-    quantity: 23,
-    subscription: index % 2 === 0 ? "Subscribed" : "Not Subscribed",
-    recentOrders: [
-      {
-        id: "#21837893729",
-        date: "12 Nov, 2024",
-        payment: "Pending",
-        total: "$2,029.18",
-        items: "2 Items",
-        fulfillment: "Unfulfilled",
-      },
-      {
-        id: "#21837893730",
-        date: "11 Nov, 2024",
-        payment: "Success",
-        total: "$778.35",
-        items: "1 Item",
-        fulfillment: "Fulfilled",
-      },
-      {
-        id: "#21837893731",
-        date: "10 Nov, 2024",
-        payment: "Success",
-        total: "$576.28",
-        items: "3 Items",
-        fulfillment: "Fulfilled",
-      },
-    ],
-  }));
+const pct = (part: number, total: number) =>
+  total ? Math.round((part / total) * 100) : 0;
+
+const toRow = (u: IUser): CustomerRow => ({
+  _id: u._id,
+  name: `${u.firstName} ${u.lastName}`.trim(),
+  firstName: u.firstName,
+  lastName: u.lastName,
+  avatar: u.profilePicture,
+  joinedOn: u.createdAt
+    ? new Date(u.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—",
+  email: u.email,
+  phone: u.phoneNumber || "—",
+  address: [u.city, u.country].filter(Boolean).join(", ") || "—",
+  city: u.city,
+  country: u.country,
+  status: u.isActive ? "Active" : "Inactive",
+});
 
 const Customers = () => {
-  const navigate = useNavigate();
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
 
-  const filterOptions = [
-    { name: "All Customers", onClick: () => {} },
-    { name: "Subscribed", onClick: () => {} },
-    { name: "Unsubscribed", onClick: () => {} },
-  ];
+  const pageSize = PAGE_SIZE.sm;
 
-  const moreActions = [
-    { name: "Export CSV", icon: <Download size={14} />, onClick: () => {} },
-    { name: "Import Users", icon: <UserPlus size={14} />, onClick: () => {} },
-    {
-      name: "Generate Report",
-      icon: <FileText size={14} />,
-      onClick: () => {},
-    },
-    {
-      name: "Delete Selection",
-      icon: <Trash2 size={14} />,
-      textColor: "R500" as any,
-      onClick: () => setIsDeleteModalOpen(true),
-      className: "hover:bg-R50",
-    },
-  ];
+  const { data, isError, isFetching, error, refetch } = useGetCustomersQuery({
+    pageNumber,
+    pageSize,
+    searchTerm,
+  });
+  const { data: statsRes } = useGetCustomerStatsQuery();
+  const stats = statsRes?.data;
+
+  const rows = useMemo(() => (data?.data.data ?? []).map(toRow), [data]);
+
+  const exportCsv = () => {
+    const header = ["Name", "Email", "Phone", "Location", "Joined", "Status"];
+    const body = rows.map((r) => [
+      r.name,
+      r.email,
+      r.phone,
+      r.address,
+      r.joinedOn,
+      r.status,
+    ]);
+    const csv = [header, ...body]
+      .map((line) =>
+        line.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `customers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (isError) {
+    return (
+      <div className="h-[70vh] w-full">
+        <NetworkError isFetching={isFetching} error={error} refetch={refetch} />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 bg-N10 min-h-screen">
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card title="TOTAL USERS" price="84,382" rate={36} isUp={true} />
+    <div className="flex flex-col gap-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card
-          title="SUBSCRIBED USERS"
-          price="2,308,485"
-          rate={14}
-          isUp={false}
-          isCurrency={true}
+          title="TOTAL CUSTOMERS"
+          price={(stats?.total ?? 0).toLocaleString()}
+          rate={pct(stats?.newThisMonth ?? 0, stats?.total ?? 0)}
+          isUp
         />
-        <Card title="NOT SUBSCRIBED" price="84,382" rate={34} isUp={true} />
+        <Card
+          title="ACTIVE"
+          price={(stats?.active ?? 0).toLocaleString()}
+          rate={pct(stats?.active ?? 0, stats?.total ?? 0)}
+          isUp
+        />
+        <Card
+          title="VERIFIED"
+          price={(stats?.verified ?? 0).toLocaleString()}
+          rate={pct(stats?.verified ?? 0, stats?.total ?? 0)}
+          isUp
+        />
+        <Card
+          title="NEW THIS MONTH"
+          price={(stats?.newThisMonth ?? 0).toLocaleString()}
+          rate={pct(stats?.newThisMonth ?? 0, stats?.total ?? 0)}
+          isUp
+        />
       </section>
 
-      <section className="bg-white border border-N30 overflow-hidden ">
+      <section className="bg-white border border-N30 overflow-hidden">
         <TMTable<CustomerRow>
-          columns={customerColumns(navigate)}
-          data={MOCK_CUSTOMERS}
-          loading={false}
+          columns={customerColumns()}
+          data={rows}
+          loading={isFetching}
           headerData={
             <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 gap-4">
               <Typography variant="h-s" fontWeight="bold">
@@ -119,44 +126,36 @@ const Customers = () => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <input
                     type="text"
-                    placeholder="Search for anything here"
+                    placeholder="Search name or email..."
                     className="w-full pl-10 pr-4 py-2 border border-N40 rounded-lg text-sm focus:outline-none"
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setPageNumber(1);
+                    }}
                   />
                 </div>
-                <ButtonDropdown
-                  buttonGroup={filterOptions}
-                  triggerIcon={<Filter size={18} />}
-                />
-                <ButtonDropdown
-                  buttonGroup={moreActions}
-                  triggerIcon={<MoreHorizontal size={18} />}
-                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="py-[7px] whitespace-nowrap"
+                  onClick={exportCsv}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Download size={14} />
+                    Export
+                  </div>
+                </Button>
               </div>
             </div>
           }
           className="border-none"
           headerClassName="bg-N10 text-N700 uppercase tracking-wider text-[11px] font-bold"
-          pageSize={7}
-          totalCount={MOCK_CUSTOMERS.length}
+          metadata={data?.data.metadata as IPaginationMetadataResponse}
+          onPageChange={(p) => setPageNumber(p)}
+          hasPerformedQuery={searchTerm.length > 0}
         />
       </section>
-
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        closeModal={() => setIsDeleteModalOpen(false)}
-        formTitle="Delete Selection"
-        message="Are you sure you want to delete the selected items?"
-        buttonLabel="Delete"
-        handleClick={() => {
-          setIsProcessing(true);
-          setTimeout(() => {
-            setIsProcessing(false);
-            setIsDeleteModalOpen(false);
-          }, 1000);
-        }}
-        type="delete"
-        isLoading={isProcessing}
-      />
     </div>
   );
 };
