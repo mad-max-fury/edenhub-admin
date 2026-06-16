@@ -1,10 +1,14 @@
 import { Badge, Button, Typography } from "@/components";
 import type { ColumnDef } from "@tanstack/react-table";
+import type { ReactNode } from "react";
 import {
   History,
   User,
+  Users,
   Package,
   ShieldCheck,
+  Lock,
+  Tag,
   CreditCard,
   Activity,
 } from "lucide-react";
@@ -14,7 +18,7 @@ export type AuditRow = {
   timestamp: string;
   actor: { name: string; role: string; avatar?: string };
   action: string;
-  category: "Orders" | "Inventory" | "Security" | "Billing" | "System";
+  category: string;
   details: string;
   ipAddress: string;
   severity: "low" | "medium" | "high";
@@ -51,14 +55,20 @@ export const auditColumns = (
       const categoryStyles: Record<string, string> = {
         Orders: "bg-B50 text-B500 border-B100",
         Inventory: "bg-O50 text-O500 border-O100",
+        Catalog: "bg-B50 text-B500 border-B100",
+        "User Management": "bg-G50 text-G500 border-G100",
+        "Access Control": "bg-R50 text-R500 border-R100",
         Security: "bg-R50 text-R500 border-R100",
         Billing: "bg-G50 text-G500 border-G100",
         System: "bg-N10 text-N600 border-N30",
       };
 
-      const icons = {
+      const icons: Record<string, ReactNode> = {
         Orders: <Package size={12} />,
         Inventory: <History size={12} />,
+        Catalog: <Tag size={12} />,
+        "User Management": <Users size={12} />,
+        "Access Control": <Lock size={12} />,
         Security: <ShieldCheck size={12} />,
         Billing: <CreditCard size={12} />,
         System: <Activity size={12} />,

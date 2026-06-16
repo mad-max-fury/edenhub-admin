@@ -7,12 +7,25 @@ import {
   Button,
   Toggle,
   ConfirmationModal,
+  notify,
 } from "@/components";
 import { SecuritySchema, type ISecurityPayload } from "./schema";
 import { ShieldCheck, BellRing, Trash2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/redux/stores";
+import { updateUser as updateUserAction } from "@/redux/api/auth/authSlice";
+import {
+  useChangePasswordMutation,
+  useUpdateUserByIdMutation,
+} from "@/redux/api/users";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 
 const SecuritySettings = () => {
-  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [changePassword] = useChangePasswordMutation();
+  const [updateUser] = useUpdateUserByIdMutation();
+  const [is2FAEnabled, setIs2FAEnabled] = useState(!!user?.twoFactorEnabled);
   const [loginAlerts, setLoginAlerts] = useState(true);
   const [pendingPasswordData, setPendingPasswordData] =
     useState<ISecurityPayload | null>(null);
@@ -39,12 +52,25 @@ const SecuritySettings = () => {
   };
 
   const submitPasswordUpdate = async () => {
+    if (!pendingPasswordData) return;
     setModalState((prev) => ({ ...prev, isLoading: true }));
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Password updated:", pendingPasswordData);
-    reset();
-    setPendingPasswordData(null);
-    closeModal();
+    try {
+      await changePassword({
+        currentPassword: pendingPasswordData.currentPassword,
+        newPassword: pendingPasswordData.newPassword,
+        confirmPassword: pendingPasswordData.confirmPassword,
+      }).unwrap();
+      notify.success({
+        message: "Password updated",
+        subtitle: "Your password has been changed",
+      });
+      reset();
+      setPendingPasswordData(null);
+      closeModal();
+    } catch (err) {
+      notify.error({ message: "Update failed", subtitle: getErrorMessage(err) });
+      setModalState((prev) => ({ ...prev, isLoading: false }));
+    }
   };
 
   const toggle2FA = async () => {

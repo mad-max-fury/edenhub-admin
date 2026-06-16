@@ -53,6 +53,7 @@ import DashboardIcon from "./dashbaordIcon.svg?react";
 import AnalyticsIcon from "./analyticIcon.svg?react";
 import OrdersIcon from "./ordersIcon.svg?react";
 import ProductsIcon from "./productsIcon.svg?react";
+import CategoriesIcon from "./categoriesIcon.svg?react";
 import CustomersIcon from "./customersIcon.svg?react";
 import SettingsIcon from "./settingsIcon.svg?react";
 import SortIcon from "./sort.svg?react";
@@ -117,6 +118,7 @@ export {
   AnalyticsIcon,
   OrdersIcon,
   ProductsIcon,
+  CategoriesIcon,
   CustomersIcon,
   SettingsIcon,
   SortIcon,

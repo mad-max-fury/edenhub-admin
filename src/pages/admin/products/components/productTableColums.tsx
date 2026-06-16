@@ -1,10 +1,5 @@
-import { useState } from "react";
-import {
-  Badge,
-  ButtonDropdown,
-  ConfirmationModal,
-  Typography,
-} from "@/components";
+import { Badge, Typography } from "@/components";
+import { ButtonDropdown } from "@/components";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   Eye,
@@ -12,10 +7,13 @@ import {
   Trash2,
   MoreVertical,
   Archive,
-  ArrowUpRight,
+  ArchiveRestore,
 } from "lucide-react";
 
+export type ProductStatus = "active" | "archived" | "drafted";
+
 export type ProductRow = {
+  _id: string;
   name: string;
   image: string;
   creationDate: string;
@@ -23,34 +21,51 @@ export type ProductRow = {
   variants: string;
   price: number;
   quantity: number;
-  status: "active" | "archived" | "drafted";
+  status: ProductStatus;
 };
 
-const ActionCell = ({ product }: { product: ProductRow }) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+export interface ProductRowActions {
+  onView: (p: ProductRow) => void;
+  onEdit: (p: ProductRow) => void;
+  onArchive: (p: ProductRow) => void;
+  onRestore: (p: ProductRow) => void;
+  onDelete: (p: ProductRow) => void;
+}
 
+const ActionCell = ({
+  product,
+  actions,
+}: {
+  product: ProductRow;
+  actions: ProductRowActions;
+}) => {
   const rowActions = [
     {
       name: "View Product",
       icon: <Eye size={14} />,
-      onClick: () => window.open(`/admin/products/view`, "_blank"),
+      onClick: () => actions.onView(product),
     },
     {
       name: "Edit Details",
       icon: <Edit size={14} />,
-      onClick: () => {},
+      onClick: () => actions.onEdit(product),
     },
-    {
-      name: "Archive Product",
-      icon: <Archive size={14} />,
-      onClick: () => {},
-    },
+    product.status === "archived"
+      ? {
+          name: "Restore Product",
+          icon: <ArchiveRestore size={14} />,
+          onClick: () => actions.onRestore(product),
+        }
+      : {
+          name: "Archive Product",
+          icon: <Archive size={14} />,
+          onClick: () => actions.onArchive(product),
+        },
     {
       name: "Delete Product",
       icon: <Trash2 size={14} />,
       textColor: "R500" as any,
-      onClick: () => setIsDeleteModalOpen(true),
+      onClick: () => actions.onDelete(product),
       className: "hover:bg-R50",
     },
   ];
@@ -62,39 +77,26 @@ const ActionCell = ({ product }: { product: ProductRow }) => {
         triggerIcon={<MoreVertical size={18} />}
         className="h-8 px-1 border-none"
       />
-
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        closeModal={() => setIsDeleteModalOpen(false)}
-        formTitle="Delete Product"
-        message={`Are you sure you want to delete "${product.name}"? This action will permanently remove the product and its history from the store.`}
-        buttonLabel="Delete Product"
-        handleClick={() => {
-          setIsProcessing(true);
-          setTimeout(() => {
-            setIsProcessing(false);
-            setIsDeleteModalOpen(false);
-          }, 1000);
-        }}
-        type="delete"
-        isLoading={isProcessing}
-      />
     </div>
   );
 };
 
-export const productColumns: ColumnDef<ProductRow>[] = [
+export const getProductColumns = (
+  actions: ProductRowActions,
+): ColumnDef<ProductRow>[] => [
   {
     header: "NAME",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg overflow-hidden bg-N20 shrink-0 border border-N30">
-          <img
-            src={row.original.image}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          {row.original.image ? (
+            <img
+              src={row.original.image}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ) : null}
         </div>
         <Typography variant="p-m" fontWeight="medium">
           {row.original.name}
@@ -112,21 +114,17 @@ export const productColumns: ColumnDef<ProductRow>[] = [
     ),
   },
   {
-    header: "PRODUCT SKU",
+    header: "SKU / VARIANTS",
     accessorKey: "sku",
     cell: ({ row }) => (
-      <Typography variant="p-s" color="N600" className="font-mono">
-        {row.original.sku}
-      </Typography>
-    ),
-  },
-  {
-    header: "VARIANTS",
-    accessorKey: "variants",
-    cell: ({ row }) => (
-      <Typography variant="p-s" color="N600">
-        {row.original.variants}
-      </Typography>
+      <div className="flex flex-col">
+        <Typography variant="p-s" color="N600" className="font-mono">
+          {row.original.sku}
+        </Typography>
+        <Typography variant="c-s" color="N400">
+          {row.original.variants}
+        </Typography>
+      </div>
     ),
   },
   {
@@ -134,7 +132,7 @@ export const productColumns: ColumnDef<ProductRow>[] = [
     accessorKey: "price",
     cell: ({ row }) => (
       <Typography variant="p-s" fontWeight="bold">
-        ${row.original.price.toLocaleString()}
+        ₦{row.original.price.toLocaleString()}
       </Typography>
     ),
   },
@@ -162,6 +160,6 @@ export const productColumns: ColumnDef<ProductRow>[] = [
       </div>
     ),
     id: "action",
-    cell: ({ row }) => <ActionCell product={row.original} />,
+    cell: ({ row }) => <ActionCell product={row.original} actions={actions} />,
   },
 ];

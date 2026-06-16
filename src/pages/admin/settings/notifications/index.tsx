@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { Typography, Toggle, ConfirmationModal } from "@/components";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Typography, Toggle, ConfirmationModal, notify } from "@/components";
+import type { RootState } from "@/redux/stores";
+import { updateUser as updateUserAction } from "@/redux/api/auth/authSlice";
+import { useUpdateUserByIdMutation } from "@/redux/api/users";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 import {
   Package,
   CreditCard,
@@ -21,19 +26,34 @@ type NotificationKey =
   | "sales_reports"
   | "dispute_alerts";
 
+const DEFAULT_PREFS: Record<NotificationKey, boolean> = {
+  new_orders: true,
+  low_stock: true,
+  payouts: true,
+  customer_messages: true,
+  new_reviews: false,
+  system_health: true,
+  sales_reports: false,
+  dispute_alerts: true,
+};
+
 const NotificationSettings = () => {
-  const [preferences, setPreferences] = useState<
-    Record<NotificationKey, boolean>
-  >({
-    new_orders: true,
-    low_stock: true,
-    payouts: true,
-    customer_messages: true,
-    new_reviews: false,
-    system_health: true,
-    sales_reports: false,
-    dispute_alerts: true,
-  });
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [updateUser] = useUpdateUserByIdMutation();
+
+  const [preferences, setPreferences] =
+    useState<Record<NotificationKey, boolean>>(DEFAULT_PREFS);
+
+  // Hydrate from the saved user preferences once available.
+  useEffect(() => {
+    if (user?.notificationPreferences) {
+      setPreferences((prev) => ({
+        ...prev,
+        ...(user.notificationPreferences as Record<NotificationKey, boolean>),
+      }));
+    }
+  }, [user]);
 
   const [modal, setModal] = useState<{
     target: NotificationKey | null;
@@ -63,12 +83,27 @@ const NotificationSettings = () => {
   const handleConfirmToggle = async () => {
     if (!modal.target) return;
     setModal((prev) => ({ ...prev, isLoading: true }));
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setPreferences((prev) => ({
-      ...prev,
-      [modal.target!]: !prev[modal.target!],
-    }));
-    setModal({ target: null, isLoading: false });
+
+    const next = {
+      ...preferences,
+      [modal.target]: !preferences[modal.target],
+    };
+
+    try {
+      if (user?._id) {
+        await updateUser({
+          id: user._id,
+          user: { notificationPreferences: next },
+        }).unwrap();
+        dispatch(updateUserAction({ notificationPreferences: next }));
+      }
+      setPreferences(next);
+      notify.success({ message: "Preferences updated" });
+    } catch (err) {
+      notify.error({ message: "Update failed", subtitle: getErrorMessage(err) });
+    } finally {
+      setModal({ target: null, isLoading: false });
+    }
   };
 
   return (

@@ -6,6 +6,7 @@ import {
   Drawer,
   Modal,
   Typography,
+  notify,
 } from "@/components";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
@@ -18,60 +19,92 @@ import {
   Slash,
   X,
 } from "lucide-react";
+import {
+  useDeleteUserByIdMutation,
+  useUpdateUserByIdMutation,
+} from "@/redux/api/users";
+import { useGetOrdersQuery } from "@/redux/api/orders";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 import { CustomerPreview } from "./customerPreview";
 import { EditCustomerForm } from "./editCustomer";
 import { SendEmailForm } from "./sendMail";
 
 export type CustomerRow = {
+  _id: string;
   name: string;
+  firstName: string;
+  lastName: string;
   avatar?: string;
   joinedOn: string;
   email: string;
   phone: string;
   address: string;
-  orders: number;
-  price: string;
-  quantity: number;
-  subscription: "Subscribed" | "Not Subscribed";
-  recentOrders?: Array<{
-    id: string;
-    date: string;
-    payment: "Success" | "Pending";
-    total: string;
-    items: string;
-    fulfillment: "Fulfilled" | "Unfulfilled";
-  }>;
+  city?: string;
+  country?: string;
+  status: "Active" | "Inactive";
 };
 
-const ActionCell = ({
-  customer,
-  navigate,
-}: {
-  customer: CustomerRow;
-  navigate: (path: string) => void;
-}) => {
-  const [modalConfig, setModalConfig] = useState<{
-    isOpen: boolean;
-    type: "delete" | "confirm" | "warning";
-    title: string;
-    message: string;
-    actionLabel: string;
-    onConfirm: () => void;
-  }>({
-    isOpen: false,
-    type: "confirm",
-    title: "",
-    message: "",
-    actionLabel: "",
-    onConfirm: () => {},
-  });
-
+const ActionCell = ({ customer }: { customer: CustomerRow }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSendMailOpen, setIsSendMailOpen] = useState(false);
   const [isEditDetailsOpen, setIsEditDetailsOpen] = useState(false);
+  const [confirm, setConfirm] = useState<null | "suspend" | "delete">(null);
 
-  const closeModal = () =>
-    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserByIdMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserByIdMutation();
+
+  // Only fetch the customer's orders once the preview drawer is opened.
+  const { data: ordersRes } = useGetOrdersQuery(
+    { pageNumber: 1, pageSize: 20, customer: customer._id },
+    { skip: !isPreviewOpen },
+  );
+  const orders = ordersRes?.data.data ?? [];
+  const amountSpent = orders
+    .filter((o) => o.paymentStatus === "paid")
+    .reduce((s, o) => s + o.grandTotal, 0);
+  const recentOrders = orders.map((o) => ({
+    id: o.orderNumber,
+    date: new Date(o.createdAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    payment: o.paymentStatus,
+    total: `₦${o.grandTotal.toLocaleString()}`,
+    items: `${o.items.length} Item${o.items.length === 1 ? "" : "s"}`,
+    fulfillment: o.fulfillmentStatus,
+  }));
+
+  const isActive = customer.status === "Active";
+
+  const toggleSuspend = async () => {
+    try {
+      await updateUser({
+        id: customer._id,
+        user: { isActive: !isActive },
+      }).unwrap();
+      notify.success({
+        message: isActive ? "Account suspended" : "Account reactivated",
+        subtitle: `${customer.name} is now ${isActive ? "inactive" : "active"}`,
+      });
+      setConfirm(null);
+    } catch (err) {
+      notify.error({ message: "Action failed", subtitle: getErrorMessage(err) });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteUser({ id: customer._id }).unwrap();
+      notify.success({
+        message: "Customer deleted",
+        subtitle: `${customer.name} was removed`,
+      });
+      setConfirm(null);
+    } catch (err) {
+      notify.error({ message: "Delete failed", subtitle: getErrorMessage(err) });
+    }
+  };
 
   const rowActions = [
     {
@@ -90,38 +123,16 @@ const ActionCell = ({
       onClick: () => setIsEditDetailsOpen(true),
     },
     {
-      name: "Suspend Account",
+      name: isActive ? "Suspend Account" : "Reactivate Account",
       icon: <Slash size={14} />,
-      onClick: () =>
-        setModalConfig({
-          isOpen: true,
-          type: "warning",
-          title: "Suspend Account",
-          message: `Are you sure you want to suspend ${customer.name}'s account? They will lose access to all services immediately.`,
-          actionLabel: "Suspend User",
-          onConfirm: () => {
-            console.log("Suspending:", customer.name);
-            closeModal();
-          },
-        }),
+      onClick: () => setConfirm("suspend"),
       className: "hover:bg-Y50 text-Y600",
     },
     {
       name: "Delete Customer",
       icon: <Trash2 size={14} />,
       textColor: "R500" as any,
-      onClick: () =>
-        setModalConfig({
-          isOpen: true,
-          type: "delete",
-          title: "Delete Customer",
-          message: `This action cannot be undone. This will permanently delete ${customer.name}'s account and all associated data.`,
-          actionLabel: "Delete Customer",
-          onConfirm: () => {
-            console.log("Deleting:", customer.name);
-            closeModal();
-          },
-        }),
+      onClick: () => setConfirm("delete"),
       className: "hover:bg-R50",
     },
   ];
@@ -135,18 +146,36 @@ const ActionCell = ({
       />
 
       <ConfirmationModal
-        isOpen={modalConfig.isOpen}
-        closeModal={closeModal}
-        formTitle={modalConfig.title}
+        isOpen={confirm === "suspend"}
+        closeModal={() => setConfirm(null)}
+        formTitle={isActive ? "Suspend Account" : "Reactivate Account"}
         message={
           <Typography variant="p-m" color="N700">
-            {modalConfig.message}
+            {isActive
+              ? `Suspend ${customer.name}'s account? They will lose access immediately.`
+              : `Reactivate ${customer.name}'s account?`}
           </Typography>
         }
-        buttonLabel={modalConfig.actionLabel}
-        handleClick={modalConfig.onConfirm}
-        type={modalConfig.type === "warning" ? "confirm" : modalConfig.type}
-        isLoading={false}
+        buttonLabel={isActive ? "Suspend User" : "Reactivate"}
+        handleClick={toggleSuspend}
+        type="confirm"
+        isLoading={isUpdating}
+      />
+
+      <ConfirmationModal
+        isOpen={confirm === "delete"}
+        closeModal={() => setConfirm(null)}
+        formTitle="Delete Customer"
+        message={
+          <Typography variant="p-m" color="N700">
+            This permanently deletes {customer.name}'s account and all associated
+            data.
+          </Typography>
+        }
+        buttonLabel="Delete Customer"
+        handleClick={handleDelete}
+        type="delete"
+        isLoading={isDeleting}
       />
 
       <Modal
@@ -160,6 +189,7 @@ const ActionCell = ({
           onClose={() => setIsSendMailOpen(false)}
         />
       </Modal>
+
       <Modal
         mobileLayoutType="drawer"
         isOpen={isEditDetailsOpen}
@@ -179,7 +209,7 @@ const ActionCell = ({
         width="885px"
         className="bg-transparent"
       >
-        <div className=" h-[95vh] my-auto w-full bg-white p-8 border overflow-auto">
+        <div className="h-[95vh] my-auto w-full bg-white p-8 border overflow-auto">
           <div className="flex items-center justify-between gap-2 w-full mb-6">
             <Typography variant="h-l" fontWeight="medium">
               Customer Preview
@@ -192,13 +222,18 @@ const ActionCell = ({
           </div>
           <CustomerPreview
             customer={{
-              ...customer,
-              status: customer.subscription,
-              amountSpent: `$${customer.price}`,
-              totalOrders: customer.orders.toString().padStart(3, "0"),
+              name: customer.name,
+              avatar: customer.avatar,
+              status: customer.status,
+              amountSpent: `₦${amountSpent.toLocaleString()}`,
+              totalOrders: String(orders.length).padStart(3, "0"),
               registeredOn: customer.joinedOn,
-              firstOrderDate: customer.joinedOn,
-              recentOrders: customer.recentOrders || [],
+              firstOrderDate:
+                recentOrders[recentOrders.length - 1]?.date ?? "—",
+              address: customer.address,
+              email: customer.email,
+              phone: customer.phone,
+              recentOrders,
             }}
           />
         </div>
@@ -207,9 +242,7 @@ const ActionCell = ({
   );
 };
 
-export const customerColumns = (
-  navigate: (path: string) => void,
-): ColumnDef<CustomerRow>[] => [
+export const customerColumns = (): ColumnDef<CustomerRow>[] => [
   {
     header: () => (
       <div className="flex items-center gap-2">
@@ -219,8 +252,18 @@ export const customerColumns = (
     ),
     accessorKey: "name",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Square className="text-N40 w-4 h-4" />
+      <div className="flex items-center gap-2.5">
+        {row.original.avatar ? (
+          <img
+            src={row.original.avatar}
+            alt=""
+            className="w-8 h-8 rounded-full object-cover border border-N30"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-B50 text-B400 flex items-center justify-center text-xs font-bold">
+            {row.original.name.charAt(0).toUpperCase()}
+          </div>
+        )}
         <Typography variant="p-m" fontWeight="medium">
           {row.original.name}
         </Typography>
@@ -246,36 +289,27 @@ export const customerColumns = (
     ),
   },
   {
-    header: "ORDERS",
-    accessorKey: "orders",
+    header: "PHONE",
+    accessorKey: "phone",
     cell: ({ row }) => (
       <Typography variant="p-s" color="N600">
-        {row.original.orders} Orders
+        {row.original.phone}
       </Typography>
     ),
   },
   {
-    header: "PRICE",
-    accessorKey: "price",
+    header: "LOCATION",
+    accessorKey: "address",
     cell: ({ row }) => (
-      <Typography variant="p-s" fontWeight="medium">
-        ${row.original.price}
+      <Typography variant="p-s" color="N600" className="max-w-[200px] truncate">
+        {row.original.address}
       </Typography>
     ),
   },
   {
-    header: "QUANTITY",
-    accessorKey: "quantity",
-    cell: ({ row }) => (
-      <Typography variant="p-s" color="N600">
-        {row.original.quantity} Items
-      </Typography>
-    ),
-  },
-  {
-    header: "SUBSCRIPTION",
-    accessorKey: "subscription",
-    cell: ({ row }) => <Badge status={row.original.subscription} />,
+    header: "STATUS",
+    accessorKey: "status",
+    cell: ({ row }) => <Badge status={row.original.status} />,
   },
   {
     header: () => (
@@ -284,8 +318,6 @@ export const customerColumns = (
       </div>
     ),
     id: "action",
-    cell: ({ row }) => (
-      <ActionCell customer={row.original} navigate={navigate} />
-    ),
+    cell: ({ row }) => <ActionCell customer={row.original} />,
   },
 ];

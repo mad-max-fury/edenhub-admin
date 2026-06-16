@@ -5,6 +5,7 @@ import type {
   IResetPasswordInput,
   IVerifyGoogleCodeInput,
   ILoginResData,
+  IVerify2FAInput,
 } from "./interface";
 import type { IResponse } from "../genericInterface";
 
@@ -15,6 +16,14 @@ export const authApi = baseApi.injectEndpoints({
     login: builder.mutation<IResponse<ILoginResData>, ILoginInput>({
       query: (data) => ({
         url: `${baseName}/login`,
+        method: "POST",
+        data,
+      }),
+    }),
+
+    verifyTwoFactor: builder.mutation<IResponse<ILoginResData>, IVerify2FAInput>({
+      query: (data) => ({
+        url: `${baseName}/2fa/verify`,
         method: "POST",
         data,
       }),
@@ -55,6 +64,7 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useLoginMutation,
+  useVerifyTwoFactorMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useVerifyGoogleCodeMutation,

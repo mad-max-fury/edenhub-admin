@@ -1,6 +1,7 @@
 import React from "react";
-import { Search, Bell, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { Breadcrumbs, type Crumb } from "../breadCrumbs/breadCrumbs";
+import { NotificationBell } from "../notificationBell/NotificationBell";
 
 interface TopBarProps {
   breadcrumbs: Crumb[];
@@ -15,8 +16,6 @@ const TopBar: React.FC<TopBarProps> = ({
   breadcrumbs,
   searchPlaceholder = "Search for anything here",
   onSearch,
-  notificationCount = 0,
-  onNotificationClick,
   openDrawer,
 }) => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,26 +62,7 @@ const TopBar: React.FC<TopBarProps> = ({
             />
           </div>
 
-          <button
-            onClick={onNotificationClick}
-            className="relative min-w-[40px] w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-lg bg-N10 border border-N30 hover:bg-N20 transition-colors"
-            aria-label={
-              notificationCount > 0
-                ? `${notificationCount} unread notifications`
-                : "Notifications"
-            }
-          >
-            <Bell className="w-5 h-5 text-N600" aria-hidden="true" />
-
-            {notificationCount > 0 && (
-              <span
-                className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-R400 text-N0 text-[10px] md:text-[11px] font-bold rounded-full flex items-center justify-center"
-                aria-hidden="true"
-              >
-                {notificationCount > 99 ? "99+" : notificationCount}
-              </span>
-            )}
-          </button>
+          <NotificationBell />
         </div>
       </div>
     </header>
