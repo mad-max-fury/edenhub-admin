@@ -16,7 +16,6 @@ export * from "./table/table";
 export * from "./notifications/notify";
 export * from "./drawer/drawer";
 export * from "./logo/logo";
-export * from "./globalSearch/globalSearch";
 export * from "./emptyPageState/emptyPageState";
 export * from "./pageHeader/pageHeader";
 export * from "./confirmationModal/confirmationModal";

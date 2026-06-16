@@ -29,6 +29,49 @@ axiosInstance.interceptors.request.use(
   },
   (error) => Promise.reject(error),
 );
+
+// Clear the session and bounce to login (only once).
+const clearSession = () => {
+  Cookies.remove(cookieValues.token);
+  Cookies.remove(cookieValues.refreshToken);
+  Cookies.remove("persist:root");
+  if (window.location.pathname !== AuthRouteConfig.LOGIN) {
+    window.location.href = AuthRouteConfig.LOGIN;
+  }
+};
+
+// Single-flight refresh: concurrent 401s share one refresh request instead of
+// each firing their own (which would race and invalidate the refresh token).
+let refreshPromise: Promise<string | null> | null = null;
+
+const doRefresh = async (baseUrl: string): Promise<string | null> => {
+  const refreshToken = getPreloadedState().auth.refresh_token;
+  if (!refreshToken) return null;
+  try {
+    // Plain axios (not axiosInstance) so the auth interceptor / retry loop
+    // doesn't apply to the refresh call itself.
+    const res = await axios.post(
+      baseUrl + "/auth/refresh-token",
+      { refreshToken },
+      { withCredentials: true },
+    );
+    const newToken: string | null = res.data?.data?.accessToken ?? null;
+    if (newToken) Cookies.set(cookieValues.token, newToken);
+    return newToken;
+  } catch {
+    return null;
+  }
+};
+
+const refreshAccessToken = (baseUrl: string): Promise<string | null> => {
+  if (!refreshPromise) {
+    refreshPromise = doRefresh(baseUrl).finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+};
+
 export const axiosBaseQuery =
   ({
     baseUrl = "",
@@ -49,63 +92,55 @@ export const axiosBaseQuery =
     unknown
   > =>
   async ({ url, method, data, params, headers = {}, responseType }) => {
-    try {
-      const result = await axiosInstance({
+    const request = (authToken?: string) =>
+      axiosInstance({
         url: baseUrl + url,
         method,
         params,
         data,
-        headers: { ...baseHeaders, ...headers },
+        headers: {
+          ...baseHeaders,
+          ...headers,
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         responseType: responseType || "json",
         withCredentials: true,
       });
 
+    try {
+      const result = await request();
       return { data: result.data };
     } catch (axiosError) {
       const err = axiosError as AxiosError;
-      if (err.response?.status === 403) {
-        try {
-          const refreshResponse = await axios.post(
-            baseUrl + "/auth/refresh-token",
-            { refreshToken: getPreloadedState().auth.refresh_token },
-            { withCredentials: true },
-          );
+      const status = err.response?.status;
+      const isAuthCall =
+        url.includes("/auth/refresh-token") || url.includes("/auth/login");
 
-          const newAccessToken = refreshResponse.data.accessToken;
-
-          const state = getPreloadedState();
-          state.auth.access_token = newAccessToken;
-          Cookies.set(cookieValues.token, newAccessToken);
-
-          const retryResult = await axiosInstance({
-            url: baseUrl + url,
-            method,
-            params,
-            data,
-            headers: {
-              ...baseHeaders,
-              ...headers,
-              Authorization: `Bearer ${newAccessToken}`,
-            },
-            withCredentials: true,
-          });
-
-          return { data: retryResult.data };
-        } catch (refreshError) {
-          Cookies.remove("persist:root");
-          window.location.href = AuthRouteConfig.LOGIN;
-          return {
-            error: {
-              status: 403,
-              message: "Session expired. Please login again.",
-            },
-          };
+      // 401 = token missing/expired/invalid → try a (deduped) refresh + retry.
+      if (status === 401 && !isAuthCall) {
+        const newToken = await refreshAccessToken(baseUrl);
+        if (newToken) {
+          try {
+            const retry = await request(newToken);
+            return { data: retry.data };
+          } catch {
+            // Retry still failed — fall through to clearing the session.
+          }
         }
+        clearSession();
+        return {
+          error: {
+            status: 401,
+            message: "Session expired. Please login again.",
+          },
+        };
       }
 
+      // 403 = authenticated but not permitted. Do NOT refresh or log out —
+      // surface it so the UI can show an access-denied message.
       return {
         error: {
-          status: err.response?.status ?? 500,
+          status: status ?? 500,
           message:
             (err.response?.data as IApiError)?.message ??
             err.message ??

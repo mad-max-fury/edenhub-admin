@@ -74,10 +74,30 @@ const SecuritySettings = () => {
   };
 
   const toggle2FA = async () => {
+    if (!user?._id) return;
+    const next = !is2FAEnabled;
     setModalState((prev) => ({ ...prev, isLoading: true }));
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIs2FAEnabled(!is2FAEnabled);
-    closeModal();
+    try {
+      const updated = await updateUser({
+        id: user._id,
+        user: { twoFactorEnabled: next },
+      }).unwrap();
+      setIs2FAEnabled(next);
+      dispatch(updateUserAction(updated.data.data));
+      notify.success({
+        message: next ? "2FA enabled" : "2FA disabled",
+        subtitle: next
+          ? "You'll be asked for a code on your next login"
+          : "Two-factor authentication is now off",
+      });
+      closeModal();
+    } catch (err) {
+      notify.error({
+        message: "Update failed",
+        subtitle: getErrorMessage(err),
+      });
+      setModalState((prev) => ({ ...prev, isLoading: false }));
+    }
   };
 
   const toggleLoginAlerts = async () => {
