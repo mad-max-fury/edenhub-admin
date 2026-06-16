@@ -1,3 +1,4 @@
+import { specialChars } from "@/pages/auth/schema";
 import * as yup from "yup";
 
 export const addUserSchema = yup.object().shape({
@@ -15,6 +16,16 @@ export const addUserSchema = yup.object().shape({
     })
     .nullable()
     .required("Please select a role"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/i, "Password must contain at least one letter")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .matches(
+      /[!@#$%^&*(),.?":{}|<>]/,
+      `Password must contain at least one special character (${specialChars})`,
+    ),
 });
 
 export type AddUserFormData = yup.InferType<typeof addUserSchema>;

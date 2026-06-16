@@ -4,6 +4,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import NotFound from "@/pages/notFound/NotFound";
 import { PageLoader } from "@/components";
 import ProtectedRouteLayout from "@/pages/admin/RouteGuard";
+import PublicRouteLayout from "@/pages/admin/PublicRouteGuard";
 
 const AdminLayout = lazy(() => import("@/pages/admin/layout"));
 const LoginPage = lazy(() => import("@/pages/auth/login/Login"));
@@ -61,6 +62,7 @@ const withSuspense = (Component: ComponentType) => (
 export const router = createBrowserRouter([
   {
     path: "/",
+    element: <PublicRouteLayout />,
     children: [
       { index: true, element: withSuspense(LoginPage) },
       { path: "forgot-password", element: withSuspense(ForgotPasswordPage) },
