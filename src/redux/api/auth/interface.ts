@@ -6,10 +6,17 @@ export interface ILoginInput {
 }
 
 export interface ILoginResData {
+  twoFactorRequired?: boolean;
+  email?: string;
   user: IUser;
   groups: any[];
   accessToken: string;
   refreshToken: string;
+}
+
+export interface IVerify2FAInput {
+  email: string;
+  code: string;
 }
 
 export interface IUser {
@@ -27,6 +34,8 @@ export interface IUser {
   country: string;
   isActive: boolean;
   wishlist: unknown[];
+  notificationPreferences?: Record<string, boolean>;
+  twoFactorEnabled?: boolean;
   createdAt: string;
   updatedAt: string;
   id: string;

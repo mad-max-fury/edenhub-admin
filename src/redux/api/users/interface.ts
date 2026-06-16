@@ -19,10 +19,20 @@ export interface IUpdateUser {
     state: string;
     city: string;
     country: string;
+    isActive: boolean;
+    notificationPreferences: Record<string, boolean>;
+    twoFactorEnabled: boolean;
   }>;
 }
 
 export interface IUpdatedUser {
   params: { type: string };
   data: IUser;
+}
+
+export interface ICustomerStats {
+  total: number;
+  active: number;
+  verified: number;
+  newThisMonth: number;
 }

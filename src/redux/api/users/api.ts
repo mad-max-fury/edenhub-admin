@@ -1,5 +1,10 @@
 import { baseApi } from "@/redux/baseApi";
-import type { IOnboardUser, IUpdatedUser, IUpdateUser } from "./interface";
+import type {
+  ICustomerStats,
+  IOnboardUser,
+  IUpdatedUser,
+  IUpdateUser,
+} from "./interface";
 import type { IPaginatedResponse, IResponse } from "../genericInterface";
 import type { IUser } from "../auth";
 import type { IPaginationQuery } from "../interface";
@@ -50,6 +55,17 @@ export const userApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: tagTypes.GET_USER }],
     }),
+
+    changePassword: builder.mutation<
+      IResponse,
+      { currentPassword: string; newPassword: string; confirmPassword: string }
+    >({
+      query: (data) => ({
+        url: `${baseName}/change-password`,
+        method: "PATCH",
+        data,
+      }),
+    }),
     updateUserById: builder.mutation<IResponse<IUpdatedUser>, IUpdateUser>({
       query: ({ id, user }) => ({
         url: `${baseName}/${id}`,
@@ -70,7 +86,16 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: tagTypes.GET_STAFFS },
         { type: tagTypes.GET_CUSTOMERS },
+        { type: tagTypes.GET_CUSTOMER_STATS },
       ],
+    }),
+
+    getCustomerStats: builder.query<IResponse<ICustomerStats>, void>({
+      query: () => ({
+        url: `${baseName}/stats`,
+        method: "GET",
+      }),
+      providesTags: [{ type: tagTypes.GET_CUSTOMER_STATS }],
     }),
   }),
 });
@@ -82,4 +107,6 @@ export const {
   useGetUserByIdQuery,
   useUpdateUserByIdMutation,
   useDeleteUserByIdMutation,
+  useGetCustomerStatsQuery,
+  useChangePasswordMutation,
 } = userApi;

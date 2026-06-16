@@ -6,6 +6,7 @@ export const AuthRouteConfig = {
   DASHBOARD: "/admin",
   ANALYTICS: "/admin/analytics",
   PRODUCTS: "/admin/products",
+  CATEGORIES: "/admin/categories",
   ORDERS: "/admin/orders",
   CUSTOMERS: "/admin/customers",
   USER_MANAGEMENT: "/admin/user-management",

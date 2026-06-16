@@ -1,0 +1,285 @@
+[
+  {
+    "name": "Watches",
+    "description": "Timepieces for every style and occasion",
+    "isActive": true,
+    "attributes": [
+      {
+        "name": "Brand",
+        "inputType": "text",
+        "isRequired": true,
+        "order": 0,
+        "options": []
+      },
+      {
+        "name": "Gender",
+        "inputType": "radio",
+        "isRequired": true,
+        "order": 1,
+        "options": [
+          { "label": "Men", "value": "men" },
+          { "label": "Women", "value": "women" },
+          { "label": "Unisex", "value": "unisex" }
+        ]
+      },
+      {
+        "name": "Water Resistance",
+        "inputType": "select",
+        "isRequired": false,
+        "order": 2,
+        "options": [
+          { "label": "None", "value": "none" },
+          { "label": "30m (Splash)", "value": "30m" },
+          { "label": "50m", "value": "50m" },
+          { "label": "100m", "value": "100m" },
+          { "label": "200m (Diver)", "value": "200m" }
+        ]
+      },
+      {
+        "name": "Warranty (years)",
+        "inputType": "text",
+        "isRequired": false,
+        "order": 3,
+        "options": []
+      }
+    ],
+    "subcategories": [
+      {
+        "name": "Analog Watches",
+        "description": "Classic hand-and-dial timepieces",
+        "attributes": [
+          {
+            "name": "Movement",
+            "inputType": "select",
+            "isRequired": true,
+            "order": 0,
+            "options": [
+              { "label": "Automatic", "value": "automatic" },
+              { "label": "Quartz", "value": "quartz" },
+              { "label": "Mechanical (Hand-wound)", "value": "mechanical" }
+            ]
+          },
+          {
+            "name": "Strap Material",
+            "inputType": "select",
+            "isRequired": false,
+            "order": 1,
+            "options": [
+              { "label": "Leather", "value": "leather" },
+              { "label": "Stainless Steel", "value": "steel" },
+              { "label": "Rubber", "value": "rubber" },
+              { "label": "Fabric / NATO", "value": "fabric" }
+            ]
+          },
+          {
+            "name": "Case Diameter (mm)",
+            "inputType": "text",
+            "isRequired": false,
+            "order": 2,
+            "options": []
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "Luxury Analog",
+            "description": "Premium and designer analog watches",
+            "attributes": [
+              {
+                "name": "Case Material",
+                "inputType": "select",
+                "isRequired": false,
+                "order": 0,
+                "options": [
+                  { "label": "Gold", "value": "gold" },
+                  { "label": "Rose Gold", "value": "rose-gold" },
+                  { "label": "Platinum", "value": "platinum" },
+                  { "label": "Stainless Steel", "value": "steel" }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Casual Analog",
+            "description": "Everyday and minimalist analog watches"
+          }
+        ]
+      },
+      {
+        "name": "Digital Watches",
+        "description": "LCD and LED digital timepieces",
+        "attributes": [
+          {
+            "name": "Display Type",
+            "inputType": "select",
+            "isRequired": false,
+            "order": 0,
+            "options": [
+              { "label": "LCD", "value": "lcd" },
+              { "label": "LED", "value": "led" },
+              { "label": "OLED", "value": "oled" }
+            ]
+          },
+          {
+            "name": "Features",
+            "inputType": "checkbox",
+            "isRequired": false,
+            "order": 1,
+            "options": [
+              { "label": "Stopwatch", "value": "stopwatch" },
+              { "label": "Alarm", "value": "alarm" },
+              { "label": "Backlight", "value": "backlight" },
+              { "label": "World Time", "value": "world-time" },
+              { "label": "Solar Powered", "value": "solar" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Smart Watches",
+        "description": "Connected wearables with smart features",
+        "attributes": [
+          {
+            "name": "OS Compatibility",
+            "inputType": "checkbox",
+            "isRequired": true,
+            "order": 0,
+            "options": [
+              { "label": "iOS (iPhone)", "value": "ios" },
+              { "label": "Android", "value": "android" }
+            ]
+          },
+          {
+            "name": "Connectivity",
+            "inputType": "checkbox",
+            "isRequired": false,
+            "order": 1,
+            "options": [
+              { "label": "Bluetooth", "value": "bluetooth" },
+              { "label": "Wi-Fi", "value": "wifi" },
+              { "label": "GPS", "value": "gps" },
+              { "label": "Cellular / LTE", "value": "lte" },
+              { "label": "NFC", "value": "nfc" }
+            ]
+          },
+          {
+            "name": "Battery Life (days)",
+            "inputType": "text",
+            "isRequired": false,
+            "order": 2,
+            "options": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Sunglasses",
+    "description": "Eyewear that blends protection and style",
+    "isActive": true,
+    "attributes": [
+      {
+        "name": "Brand",
+        "inputType": "text",
+        "isRequired": true,
+        "order": 0,
+        "options": []
+      },
+      {
+        "name": "Gender",
+        "inputType": "radio",
+        "isRequired": true,
+        "order": 1,
+        "options": [
+          { "label": "Men", "value": "men" },
+          { "label": "Women", "value": "women" },
+          { "label": "Unisex", "value": "unisex" }
+        ]
+      },
+      {
+        "name": "Frame Material",
+        "inputType": "select",
+        "isRequired": false,
+        "order": 2,
+        "options": [
+          { "label": "Acetate", "value": "acetate" },
+          { "label": "Metal", "value": "metal" },
+          { "label": "Titanium", "value": "titanium" },
+          { "label": "TR90 / Plastic", "value": "tr90" }
+        ]
+      },
+      {
+        "name": "Frame Shape",
+        "inputType": "select",
+        "isRequired": false,
+        "order": 3,
+        "options": [
+          { "label": "Aviator", "value": "aviator" },
+          { "label": "Wayfarer", "value": "wayfarer" },
+          { "label": "Round", "value": "round" },
+          { "label": "Cat Eye", "value": "cat-eye" },
+          { "label": "Rectangle", "value": "rectangle" },
+          { "label": "Sport / Wrap", "value": "sport" }
+        ]
+      },
+      {
+        "name": "Lens Color",
+        "inputType": "text",
+        "isRequired": false,
+        "order": 4,
+        "options": []
+      }
+    ],
+    "subcategories": [
+      {
+        "name": "Polarized Sunglasses",
+        "description": "Glare-reducing polarized lenses",
+        "attributes": [
+          {
+            "name": "UV Protection",
+            "inputType": "select",
+            "isRequired": true,
+            "order": 0,
+            "options": [
+              { "label": "UV400", "value": "uv400" },
+              { "label": "100% UVA/UVB", "value": "uva-uvb" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Non-Polarized Sunglasses",
+        "description": "Standard tinted lenses"
+      },
+      {
+        "name": "Sports Sunglasses",
+        "description": "Performance eyewear for active use",
+        "attributes": [
+          {
+            "name": "Sport Type",
+            "inputType": "select",
+            "isRequired": false,
+            "order": 0,
+            "options": [
+              { "label": "Cycling", "value": "cycling" },
+              { "label": "Running", "value": "running" },
+              { "label": "Skiing", "value": "skiing" },
+              { "label": "Water Sports", "value": "water-sports" }
+            ]
+          },
+          {
+            "name": "Features",
+            "inputType": "checkbox",
+            "isRequired": false,
+            "order": 1,
+            "options": [
+              { "label": "Anti-Fog", "value": "anti-fog" },
+              { "label": "Interchangeable Lenses", "value": "interchangeable" },
+              { "label": "Impact Resistant", "value": "impact-resistant" },
+              { "label": "Non-Slip Grip", "value": "non-slip" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
