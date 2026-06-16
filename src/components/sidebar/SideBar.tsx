@@ -32,6 +32,7 @@ interface SidebarProps {
   };
   onUserMenuClick?: () => void;
   isUserMenuOpen?: boolean;
+  onLogout?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -43,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   userProfile,
   onUserMenuClick,
   isUserMenuOpen = false,
+  onLogout,
 }) => {
   return (
     <aside
@@ -188,31 +190,60 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
         ) : (
-          <button
-            onClick={onUserMenuClick}
-            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-N20 transition-colors"
-            aria-label="User menu"
-            aria-expanded={isUserMenuOpen}
-            aria-haspopup="true"
-          >
-            <ImageWrapper
-              src={userProfile.avatar}
-              alt={userProfile.name}
-              className="w-9 h-9 rounded-lg object-cover"
-            />
-            <div className="flex-1 text-left">
-              <Typography
-                className="font-clashDisplay"
-                color={"text-default"}
-                variant="p-m"
-              >
-                {userProfile.name}
-              </Typography>
-              <Typography color={"text-light"} variant="p-s">
-                {userProfile.role}
-              </Typography>
-            </div>
-          </button>
+          <div className="relative">
+            {isUserMenuOpen && (
+              <div className="absolute bottom-full mb-2 left-0 right-0 bg-N0 border border-N30 rounded-lg shadow-lg overflow-hidden z-20">
+                <button
+                  onClick={onLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-R500 hover:bg-R50/30 transition-colors"
+                  aria-label="Log out"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  <Typography variant="p-m" className="text-R500">
+                    Log out
+                  </Typography>
+                </button>
+              </div>
+            )}
+            <button
+              onClick={onUserMenuClick}
+              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-N20 transition-colors"
+              aria-label="User menu"
+              aria-expanded={isUserMenuOpen}
+              aria-haspopup="true"
+            >
+              <ImageWrapper
+                src={userProfile.avatar}
+                alt={userProfile.name}
+                className="w-9 h-9 rounded-lg object-cover"
+              />
+              <div className="flex-1 text-left">
+                <Typography
+                  className="font-clashDisplay"
+                  color={"text-default"}
+                  variant="p-m"
+                >
+                  {userProfile.name}
+                </Typography>
+                <Typography color={"text-light"} variant="p-s">
+                  {userProfile.role}
+                </Typography>
+              </div>
+            </button>
+          </div>
         )}
       </footer>
     </aside>

@@ -24,6 +24,7 @@ const AddUserForm = ({ onClose, initialData, roles }: AddUserFormProps) => {
       firstName: "",
       email: "",
       lastName: "",
+      password: "",
       role: roles[0],
     };
     if (initialData) return initialData as AddUserFormData;
@@ -102,6 +103,17 @@ const AddUserForm = ({ onClose, initialData, roles }: AddUserFormProps) => {
           error={!!errors.email}
           errorText={errors.email?.message}
           disabled={isEditMode}
+        />
+
+        <TextField
+          label="Password"
+          name={"password"}
+          type="password"
+          register={register}
+          placeholder="e.g. *****"
+          flexStyle="col"
+          error={!!errors.password}
+          errorText={errors.password?.message}
         />
 
         <Controller

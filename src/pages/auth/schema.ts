@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-const specialChars = '!@#$%^&*(),.?":{}|<>';
+export const specialChars = '!@#$%^&*(),.?":{}|<>';
 
 export const LoginSchema = yup.object().shape({
   email: yup
@@ -15,7 +15,7 @@ export const LoginSchema = yup.object().shape({
     .matches(/[0-9]/, "Password must contain at least one number")
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      `Password must contain at least one special character (${specialChars})`
+      `Password must contain at least one special character (${specialChars})`,
     ),
 });
 
@@ -28,7 +28,7 @@ export const createNewPasswordSchema = yup.object().shape({
     .matches(/[0-9]/, "Password must contain at least one number")
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      `Password must contain at least one special character (${specialChars})`
+      `Password must contain at least one special character (${specialChars})`,
     ),
   confirmPassword: yup
     .string()
@@ -49,7 +49,7 @@ export const signupSchema = yup.object().shape({
     .matches(/[0-9]/, "Password must contain at least one number")
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      `Password must contain at least one special character (${specialChars})`
+      `Password must contain at least one special character (${specialChars})`,
     ),
   confirmPassword: yup
     .string()

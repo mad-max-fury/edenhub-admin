@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 import {
   DashboardIcon,
@@ -17,72 +17,137 @@ import Sidebar from "@/components/sidebar/SideBar";
 import TopBar from "@/components/topbar/Topbar";
 import type { Crumb } from "@/components/breadCrumbs/breadCrumbs";
 import { AuthRouteConfig } from "@/constants/routes";
-import { Drawer } from "@/components";
+import { ConfirmationModal, Drawer } from "@/components";
+import { NoAccess } from "@/components/noAccess/NoAccess";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/stores";
 import { useGetOrderStatsQuery } from "@/redux/api/orders";
+import useAuthAction from "@/utils/useAuthAction";
+import {
+  AREA_PERMISSIONS,
+  requiredPermissionsForPath,
+  usePermissions,
+} from "@/utils/permissions";
+
+// Menu item + the permissions that gate it (any-of).
+type NavItem = MenuItem & { perms: string[] };
 
 const AdminLayout = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const { data: orderStats } = useGetOrderStatsQuery();
+  const { canAny } = usePermissions();
+
+  const canSeeOrders = canAny([...AREA_PERMISSIONS.orders]);
+  const { data: orderStats } = useGetOrderStatsQuery(undefined, {
+    skip: !canSeeOrders,
+  });
   const newOrders = orderStats?.data?.unfulfilled ?? 0;
+  const { logout } = useAuthAction();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [openSideMenu, setOpenMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    setIsUserMenuOpen(false);
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    logout();
+  };
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const menuItems: MenuItem[] = useMemo(
-    () => [
+  // Full nav with its gating permissions, then filtered to what the user can see.
+  const menuItems: MenuItem[] = useMemo(() => {
+    const all: NavItem[] = [
       {
         name: "Dashboard",
         icon: DashboardIcon,
         path: AuthRouteConfig.DASHBOARD,
+        perms: [...AREA_PERMISSIONS.dashboard],
       },
       {
         name: "Analytics",
         icon: AnalyticsIcon,
         path: AuthRouteConfig.ANALYTICS,
+        perms: [...AREA_PERMISSIONS.analytics],
       },
-      { name: "Products", icon: ProductsIcon, path: AuthRouteConfig.PRODUCTS },
+      {
+        name: "Products",
+        icon: ProductsIcon,
+        path: AuthRouteConfig.PRODUCTS,
+        perms: [...AREA_PERMISSIONS.products],
+      },
       {
         name: "Categories",
         icon: CategoriesIcon,
         path: AuthRouteConfig.CATEGORIES,
+        perms: [...AREA_PERMISSIONS.categories],
       },
       {
         name: "Orders",
         icon: OrdersIcon,
         path: AuthRouteConfig.ORDERS,
         badge: newOrders || null,
+        perms: [...AREA_PERMISSIONS.orders],
       },
       {
         name: "Customers",
         icon: CustomersIcon,
         path: AuthRouteConfig.CUSTOMERS,
+        perms: [...AREA_PERMISSIONS.customers],
       },
       {
         name: "User Management",
         icon: UserManagementIcon,
         path: AuthRouteConfig.USER_MANAGEMENT,
+        perms: [...AREA_PERMISSIONS.userManagement],
       },
       {
         name: "Audit Trail",
         icon: AuditTrailIcon,
         path: AuthRouteConfig.AUDIT_TRAIL,
+        perms: [...AREA_PERMISSIONS.auditTrail],
       },
-      { name: "Settings", icon: SettingsIcon, path: AuthRouteConfig.SETTINGS },
-    ],
-    [newOrders],
-  );
+      {
+        name: "Settings",
+        icon: SettingsIcon,
+        path: AuthRouteConfig.SETTINGS,
+        perms: [...AREA_PERMISSIONS.settings],
+      },
+    ];
+    return all
+      .filter((item) => canAny(item.perms))
+      .map(({ perms: _perms, ...item }) => item);
+  }, [newOrders, canAny]);
+
+  // First page the user is actually allowed to land on.
+  const firstAccessiblePath =
+    menuItems[0]?.path ?? AuthRouteConfig.SETTINGS;
+
+  // Is the user allowed to view the page they're currently on?
+  const isPathAllowed = canAny(requiredPermissionsForPath(location.pathname));
+
+  // If they land on a page they can't see (e.g. dashboard without analytics
+  // permission), bounce them to their first accessible page.
+  useEffect(() => {
+    if (!isPathAllowed) {
+      const isLanding =
+        location.pathname === AuthRouteConfig.DASHBOARD ||
+        location.pathname === `${AuthRouteConfig.DASHBOARD}/`;
+      if (isLanding) navigate(firstAccessiblePath, { replace: true });
+    }
+  }, [isPathAllowed, location.pathname, firstAccessiblePath, navigate]);
 
   const activeItem = useMemo(() => {
     const currentItem = menuItems.find((item) =>
       location.pathname.includes(item.path.split("/")[2]),
     );
-    return currentItem ? currentItem.name : menuItems[0].name;
+    return currentItem ? currentItem.name : menuItems[0]?.name;
   }, [location.pathname, menuItems]);
 
   const generateBreadcrumbs = (): Crumb[] => {
@@ -106,6 +171,17 @@ const AdminLayout = () => {
     setOpenMenu(false);
   };
 
+  const userProfile = {
+    name: user?.firstName + " " + user?.lastName,
+    role:
+      user?.role?.name
+        .split(" ")
+        .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ") || "User",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+  };
+
   return (
     <div
       className="flex h-screen font-inter bg-N10 overflow-hidden"
@@ -121,18 +197,10 @@ const AdminLayout = () => {
           }}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-          userProfile={{
-            name: user?.firstName + " " + user?.lastName,
-            role:
-              user?.role?.name
-                .split(" ")
-                .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join(" ") || "User",
-            avatar:
-              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-          }}
+          userProfile={userProfile}
           onUserMenuClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
           isUserMenuOpen={isUserMenuOpen}
+          onLogout={handleLogout}
         />
       </aside>
 
@@ -147,7 +215,11 @@ const AdminLayout = () => {
         />
 
         <main className="flex-1 p-4 md:p-8 overflow-auto bg-N10 custom-scrollbar">
-          <Outlet />
+          {isPathAllowed ? (
+            <Outlet />
+          ) : (
+            <NoAccess homePath={firstAccessiblePath} />
+          )}
         </main>
       </div>
 
@@ -170,21 +242,24 @@ const AdminLayout = () => {
             }}
             isCollapsed={false}
             onToggleCollapse={() => setOpenMenu(false)}
-            userProfile={{
-              name: user?.firstName + " " + user?.lastName,
-              role:
-                user?.role?.name
-                  .split(" ")
-                  .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
-                  .join(" ") || "User",
-              avatar:
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-            }}
+            userProfile={userProfile}
             onUserMenuClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             isUserMenuOpen={isUserMenuOpen}
+            onLogout={handleLogout}
           />
         </div>
       </Drawer>
+
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        closeModal={() => setShowLogoutModal(false)}
+        formTitle="Log out"
+        message="Are you sure you want to log out of your account?"
+        buttonLabel="Log out"
+        handleClick={confirmLogout}
+        type="warning"
+        isLoading={false}
+      />
     </div>
   );
 };
