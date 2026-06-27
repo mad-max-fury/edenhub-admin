@@ -6,6 +6,12 @@ import {
   Truck,
   ExternalLink,
   RefreshCw,
+  Package,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  MessageCircle,
+  RotateCcw,
 } from "lucide-react";
 
 import {
@@ -18,9 +24,7 @@ import {
 } from "@/components";
 import {
   useGetOrderByIdQuery,
-  useVerifyOrderPaymentMutation,
   useRefundOrderMutation,
-  useUpdateOrderPaymentMutation,
   useUpdateOrderFulfillmentMutation,
   useShipOrderMutation,
   useTrackOrderMutation,
@@ -28,6 +32,8 @@ import {
   type IOrder,
 } from "@/redux/api/orders";
 import { getErrorMessage } from "@/utils/getErrorMessges";
+import { useGetDisputesQuery } from "@/redux/api/disputes";
+import { AuthRouteConfig } from "@/constants/routes";
 
 const money = (n?: number) => `₦${Number(n ?? 0).toLocaleString()}`;
 
@@ -74,6 +80,49 @@ const SummaryRow = ({
   </div>
 );
 
+const FULFILLMENT_STEPS = [
+  { key: "unfulfilled", label: "Order Placed", icon: Package },
+  { key: "shipped", label: "Shipped", icon: Truck },
+  { key: "delivered", label: "Delivered", icon: CheckCircle2 },
+] as const;
+
+const getFulfillmentIndex = (status: string) => {
+  if (status === "delivered") return 2;
+  if (status === "shipped" || status === "fulfilled") return 1;
+  return 0;
+};
+
+const FulfillmentTracker = ({ status }: { status: string }) => {
+  const current = getFulfillmentIndex(status);
+  return (
+    <div className="flex items-center gap-1 mb-4">
+      {FULFILLMENT_STEPS.map((step, i) => {
+        const done = i <= current;
+        const Icon = step.icon;
+        return (
+          <div key={step.key} className="flex items-center gap-1 flex-1">
+            <div
+              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium ${
+                done ? "bg-G50 text-G600" : "bg-N10 text-N400"
+              }`}
+            >
+              <Icon size={13} />
+              {step.label}
+            </div>
+            {i < FULFILLMENT_STEPS.length - 1 && (
+              <div
+                className={`flex-1 h-0.5 min-w-3 ${
+                  i < current ? "bg-G400" : "bg-N30"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const Order = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -81,10 +130,7 @@ const Order = () => {
   const { data, isLoading, isError, isFetching, error, refetch } =
     useGetOrderByIdQuery({ id: id as string }, { skip: !id });
 
-  const [verifyPayment, { isLoading: verifying }] =
-    useVerifyOrderPaymentMutation();
   const [refund, { isLoading: refunding }] = useRefundOrderMutation();
-  const [updatePayment] = useUpdateOrderPaymentMutation();
   const [updateFulfillment] = useUpdateOrderFulfillmentMutation();
   const [shipOrder, { isLoading: shipping }] = useShipOrderMutation();
   const [trackOrder, { isLoading: tracking }] = useTrackOrderMutation();
@@ -108,13 +154,19 @@ const Order = () => {
   const order: IOrder = data.data;
   const customer = typeof order.customer === "string" ? null : order.customer;
   const ship = order.shipment || {};
+  const isCancelled = order.status === "cancelled";
+  const isPaid = order.paymentStatus === "paid";
+  // A shipment can only be booked on a live, paid order — never on a
+  // cancelled one, and never before payment clears.
   const canBook =
+    !isCancelled &&
+    isPaid &&
     order.fulfillmentStatus === "unfulfilled" &&
     !!ship.requestToken &&
     !!ship.serviceCode &&
     !!ship.courierId;
 
-  const run = async (fn: () => Promise<any>, success: string) => {
+  const run = async (fn: () => Promise<unknown>, success: string) => {
     try {
       await fn();
       notify.success({ message: success });
@@ -122,6 +174,12 @@ const Order = () => {
       notify.error({ message: "Action failed", subtitle: getErrorMessage(err) });
     }
   };
+
+  const addr = order.shippingAddress;
+  const addrName =
+    addr?.fullName ||
+    [addr?.firstName, addr?.lastName].filter(Boolean).join(" ") ||
+    "—";
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 mb-16">
@@ -231,52 +289,27 @@ const Order = () => {
               </Typography>
               <Badge status={order.paymentStatus} />
             </div>
+            {order.paidAt && (
+              <Typography variant="c-s" color="N500" className="block mb-2">
+                Paid {new Date(order.paidAt).toLocaleString()}
+              </Typography>
+            )}
+
+            {isCancelled && isPaid && (
+              <div className="flex items-start gap-2 rounded-lg bg-Y50 text-Y500 px-3 py-2.5 mb-3">
+                <Clock size={15} className="mt-0.5 shrink-0" />
+                <Typography variant="c-s" color="Y500">
+                  This order was cancelled while paid. The customer has not been
+                  refunded — issue a refund to return their money.
+                </Typography>
+              </div>
+            )}
+
             <div className="flex flex-col gap-2">
-              {order.paymentAuthorizationUrl &&
-                order.paymentStatus === "pending" && (
-                  <a
-                    href={order.paymentAuthorizationUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-1.5 text-sm font-semibold text-B400 border border-N40 rounded-lg py-2 hover:bg-N10"
-                  >
-                    <ExternalLink size={14} /> Open payment link
-                  </a>
-                )}
-              <Button
-                size="sm"
-                variant="secondary"
-                loading={verifying}
-                onClick={() =>
-                  run(
-                    () => verifyPayment({ id: order._id }).unwrap(),
-                    "Payment re-checked",
-                  )
-                }
-              >
-                Verify with Paystack
-              </Button>
-              {order.paymentStatus !== "paid" && (
+              {isPaid && (
                 <Button
                   size="sm"
-                  onClick={() =>
-                    run(
-                      () =>
-                        updatePayment({
-                          id: order._id,
-                          paymentStatus: "paid",
-                        }).unwrap(),
-                      "Marked paid",
-                    )
-                  }
-                >
-                  Mark as paid
-                </Button>
-              )}
-              {order.paymentStatus === "paid" && (
-                <Button
-                  size="sm"
-                  variant="secondary"
+                  variant={isCancelled ? "primary" : "secondary"}
                   loading={refunding}
                   onClick={() =>
                     run(
@@ -285,7 +318,7 @@ const Order = () => {
                     )
                   }
                 >
-                  Refund
+                  {isCancelled ? "Issue refund" : "Refund"}
                 </Button>
               )}
             </div>
@@ -296,12 +329,17 @@ const Order = () => {
             title="Fulfillment"
             icon={<Truck size={15} className="text-B400" />}
           >
-            <div className="flex items-center justify-between mb-4">
-              <Typography variant="p-s" color="N500">
-                Status
-              </Typography>
-              <Badge status={order.fulfillmentStatus} />
-            </div>
+            {isCancelled ? (
+              <div className="flex items-start gap-2 rounded-lg bg-R50 text-R500 px-3 py-2.5">
+                <Clock size={15} className="mt-0.5 shrink-0" />
+                <Typography variant="c-s" color="R500">
+                  This order was cancelled. Fulfillment is disabled and no
+                  shipment can be booked.
+                </Typography>
+              </div>
+            ) : (
+              <>
+            <FulfillmentTracker status={order.fulfillmentStatus} />
 
             {ship.courier && (
               <Typography variant="c-s" color="N500" className="block mb-2">
@@ -309,7 +347,18 @@ const Order = () => {
               </Typography>
             )}
 
-            <div className="flex flex-col gap-2">
+            {ship.shippedAt && (
+              <Typography variant="c-s" color="N500" className="block mb-1">
+                Shipped: {new Date(ship.shippedAt).toLocaleString()}
+              </Typography>
+            )}
+            {ship.deliveredAt && (
+              <Typography variant="c-s" color="N500" className="block mb-1">
+                Delivered: {new Date(ship.deliveredAt).toLocaleString()}
+              </Typography>
+            )}
+
+            <div className="flex flex-col gap-2 mt-3">
               {canBook && (
                 <Button
                   size="sm"
@@ -387,6 +436,8 @@ const Order = () => {
                   </Button>
                 )}
             </div>
+              </>
+            )}
           </Section>
 
           {/* Customer */}
@@ -399,22 +450,26 @@ const Order = () => {
                 {customer.email}
               </Typography>
             )}
-            {order.shippingAddress && (
+            {addr && (
               <div className="mt-3 pt-3 border-t border-N20">
                 <Typography
                   variant="c-s"
                   color="N400"
-                  className="uppercase font-bold"
+                  className="uppercase font-bold flex items-center gap-1"
                 >
-                  Shipping
+                  <MapPin size={12} /> Delivery Address
                 </Typography>
                 <Typography variant="p-s" color="N600" className="block mt-1">
-                  {order.shippingAddress.fullName}
+                  {addrName}
                   <br />
-                  {order.shippingAddress.address}, {order.shippingAddress.city},{" "}
-                  {order.shippingAddress.state}, {order.shippingAddress.country}
+                  {addr.address}
+                  {addr.landmark ? ` (${addr.landmark})` : ""}
                   <br />
-                  {order.shippingAddress.phone}
+                  {addr.city}, {addr.state}, {addr.country}
+                  {addr.postalCode ? ` ${addr.postalCode}` : ""}
+                  <br />
+                  {addr.phone}
+                  {addr.additionalPhone ? ` · ${addr.additionalPhone}` : ""}
                 </Typography>
               </div>
             )}
@@ -435,8 +490,52 @@ const Order = () => {
             </Button>
           )}
         </div>
+
+        {/* Disputes for this order */}
+        <OrderDisputes orderId={order._id} />
       </div>
     </div>
+  );
+};
+
+const dStatusCls: Record<string, string> = {
+  open: "bg-blue-50 text-blue-600", under_review: "bg-orange-50 text-orange-600",
+  resolved: "bg-green-50 text-green-600", rejected: "bg-red-50 text-red-500", refunded: "bg-green-50 text-green-600",
+};
+const dStatusLabel: Record<string, string> = {
+  open: "Open", under_review: "Under Review", resolved: "Resolved", rejected: "Rejected", refunded: "Refunded",
+};
+
+const OrderDisputes = ({ orderId }: { orderId: string }) => {
+  const navigate = useNavigate();
+  const { data } = useGetDisputesQuery({ pageSize: 50 });
+  const disputes = (data?.data.data ?? []).filter((d) => d.order._id === orderId);
+
+  if (disputes.length === 0) return null;
+
+  return (
+    <Section title="Disputes" icon={<RotateCcw size={16} />}>
+      <div className="flex flex-col gap-3">
+        {disputes.map((d) => (
+          <div key={d._id} className="flex items-start gap-3 py-2">
+            <RotateCcw size={14} className="text-N400 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-N800 capitalize">{d.type.replace(/_/g, " ")}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${dStatusCls[d.status] || "bg-gray-50 text-gray-500"}`}>{dStatusLabel[d.status] || d.status}</span>
+              </div>
+              <Typography color="N400" variant="c-s">{d.reason}</Typography>
+              {d.resolution && <Typography color="G500" variant="c-s">{d.resolution}</Typography>}
+              {d.refundAmount && d.refundAmount > 0 && <Typography color="G500" variant="c-s">Refunded: {money(d.refundAmount)}</Typography>}
+            </div>
+            <button onClick={() => navigate(AuthRouteConfig.DISPUTES)}
+              className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-400 font-medium shrink-0">
+              <MessageCircle size={11} /> Manage
+            </button>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 };
 

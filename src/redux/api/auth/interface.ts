@@ -7,6 +7,7 @@ export interface ILoginInput {
 
 export interface ILoginResData {
   twoFactorRequired?: boolean;
+  twoFactorMethod?: "email" | "authenticator";
   email?: string;
   user: IUser;
   groups: any[];
@@ -46,8 +47,9 @@ export interface IForgotPasswordInput {
 }
 
 export interface IResetPasswordInput {
-  password: string;
-  passwordConfirmation: string;
+  email: string;
+  newPassword: string;
+  verificationCode: string;
 }
 
 export interface IVerifyGoogleCodeInput {

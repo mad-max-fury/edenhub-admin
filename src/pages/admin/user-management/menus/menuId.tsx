@@ -71,7 +71,7 @@ const MenuId = () => {
   if (isLoading) {
     return (
       <div className="h-[70vh] w-full">
-        <Spinner />;
+        <Spinner />
       </div>
     );
   }

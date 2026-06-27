@@ -145,7 +145,12 @@ export const AssignRole = ({
         >
           Cancel
         </Button>
-        <Button variant={"primary"} className="msm:w-full" loading={isUpdating}>
+        <Button
+          type="submit"
+          variant={"primary"}
+          className="msm:w-full"
+          loading={isUpdating}
+        >
           {editData ? "Save" : "Assign Role"}
         </Button>
       </div>

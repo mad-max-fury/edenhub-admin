@@ -1,90 +1,256 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, Pencil, Package, Tag } from "lucide-react";
+import {
+  ChevronLeft,
+  Pencil,
+  Package,
+  Tag,
+  Layers,
+  ArrowRight,
+} from "lucide-react";
 
 import {
   Badge,
   Button,
+  ImageCarousel,
+  Modal,
   NetworkError,
   Spinner,
   Typography,
 } from "@/components";
-import {
-  useGetProductByIdQuery,
-  type IVariant,
-} from "@/redux/api/products";
+import { useGetProductByIdQuery, type IVariant } from "@/redux/api/products";
 import { ProductAnalytics } from "./components/ProductAnalytics";
+import { ProductOrders } from "./components/ProductOrders";
 import { AuthRouteConfig } from "@/constants/routes";
 
 const money = (n?: number) => `₦${Number(n ?? 0).toLocaleString()}`;
 
-const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="flex items-center justify-between py-2 border-b border-N20 last:border-0">
+const InfoRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => (
+  <div className="flex items-center justify-between gap-4 py-2.5 border-b border-N20 last:border-0">
     <Typography variant="p-s" color="N500">
       {label}
     </Typography>
-    <Typography variant="p-s" color="N700" fontWeight="medium">
+    <Typography
+      variant="p-s"
+      color="N700"
+      fontWeight="medium"
+      className="text-right"
+    >
       {value}
     </Typography>
   </div>
 );
 
-const VariantCard = ({ variant }: { variant: IVariant }) => {
-  const hasDiscount = !!variant.discount?.price && variant.discount.price > 0;
-  return (
-    <div className="border border-N30 rounded-lg p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <Typography variant="p-m" fontWeight="bold">
-          {variant.name}
+const Section = ({
+  title,
+  icon,
+  children,
+  action,
+}: {
+  title: React.ReactNode;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) => (
+  <div className="bg-white border border-N30 rounded-xl overflow-hidden">
+    <div className="px-5 py-4 border-b border-N20 bg-N10/50 flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        {icon}
+        <Typography variant="h-s" fontWeight="bold">
+          {title}
         </Typography>
-        <span className="text-xs font-mono text-N500">{variant.sku}</span>
       </div>
-      <div className="flex flex-wrap gap-x-8 gap-y-2">
-        <div>
-          <Typography variant="c-s" color="N400">
-            Price
-          </Typography>
-          <div className="flex items-center gap-2">
-            <Typography variant="p-s" fontWeight="bold">
-              {money(hasDiscount ? variant.discount?.price : variant.basePrice)}
+      {action}
+    </div>
+    <div className="p-5">{children}</div>
+  </div>
+);
+
+const AttributeList = ({
+  attributes,
+}: {
+  attributes?: Record<string, unknown>;
+}) => {
+  const entries = Object.entries(attributes ?? {}).filter(
+    ([, v]) => v !== undefined && v !== null && v !== "",
+  );
+  if (entries.length === 0) return null;
+  return (
+    <div className="grid grid-cols-2 gap-x-6">
+      {entries.map(([k, v]) => (
+        <InfoRow
+          key={k}
+          label={k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())}
+          value={Array.isArray(v) ? v.join(", ") : String(v)}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Shared pricing/stock block reused by the product and each variant.
+const PriceStockFacts = ({
+  basePrice,
+  discount,
+  quantity,
+}: {
+  basePrice: number;
+  discount?: IVariant["discount"];
+  quantity: number;
+}) => {
+  const hasDiscount = !!discount?.price && discount.price > 0;
+  return (
+    <>
+      <div className="flex items-center gap-2 mb-1">
+        <Typography variant="h-m" fontWeight="bold">
+          {money(hasDiscount ? discount?.price : basePrice)}
+        </Typography>
+        {hasDiscount && (
+          <span className="text-sm text-N400 line-through">
+            {money(basePrice)}
+          </span>
+        )}
+      </div>
+      {hasDiscount && discount?.promotionName && (
+        <InfoRow label="Promotion" value={discount.promotionName} />
+      )}
+      <InfoRow
+        label="Stock"
+        value={
+          <span className={quantity < 5 ? "text-R500" : undefined}>
+            {quantity} units{quantity < 5 ? " · low" : ""}
+          </span>
+        }
+      />
+    </>
+  );
+};
+
+const VariantDetailModal = ({
+  variant,
+  onClose,
+}: {
+  variant: IVariant | null;
+  onClose: () => void;
+}) => (
+  <Modal
+    isOpen={!!variant}
+    onClose={onClose}
+    title={variant?.name ? `Variant · ${variant.name}` : "Variant"}
+    mobileLayoutType="normal"
+    className="max-w-3xl"
+  >
+    {variant && (
+      <div className="p-6 grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
+        <ImageCarousel images={variant.images ?? []} alt={variant.name} />
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-2">
+            <Typography variant="p-l" fontWeight="bold">
+              {variant.name}
             </Typography>
-            {hasDiscount && (
-              <span className="text-xs text-N400 line-through">
-                {money(variant.basePrice)}
-              </span>
+            {variant.isActive === false ? (
+              <Badge status="archived" text="Inactive" />
+            ) : (
+              <Badge status="active" />
             )}
           </div>
-        </div>
-        <div>
-          <Typography variant="c-s" color="N400">
-            Stock
-          </Typography>
-          <Typography variant="p-s" color={variant.quantity < 5 ? "R500" : "N700"}>
-            {variant.quantity} units
-          </Typography>
-        </div>
-        {variant.tags && variant.tags.length > 0 && (
+          {variant.sku && (
+            <Typography variant="c-s" color="N500" className="font-mono -mt-2">
+              SKU: {variant.sku}
+            </Typography>
+          )}
           <div>
-            <Typography variant="c-s" color="N400">
-              Tags
-            </Typography>
-            <Typography variant="p-s" color="N700">
-              {variant.tags.join(", ")}
-            </Typography>
+            <PriceStockFacts
+              basePrice={variant.basePrice}
+              discount={variant.discount}
+              quantity={variant.quantity}
+            />
+          </div>
+          {variant.attributes && (
+            <AttributeList attributes={variant.attributes} />
+          )}
+          {variant.tags && variant.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {variant.tags.map((t) => (
+                <span
+                  key={t}
+                  className="px-2.5 py-1 rounded-full bg-BR50 text-BR500 text-xs font-medium"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+  </Modal>
+);
+
+const VariantCard = ({
+  variant,
+  onView,
+}: {
+  variant: IVariant;
+  onView: () => void;
+}) => {
+  const hasDiscount = !!variant.discount?.price && variant.discount.price > 0;
+  return (
+    <div className="border border-N30 rounded-xl p-4 flex gap-4">
+      <div className="w-20 h-20 rounded-lg overflow-hidden border border-N30 bg-N10 shrink-0">
+        {variant.images?.[0] ? (
+          <img
+            src={variant.images[0]}
+            alt={variant.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full grid place-items-center text-N300">
+            <Package size={20} />
           </div>
         )}
       </div>
-      {variant.images && variant.images.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {variant.images.map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              alt=""
-              className="w-12 h-12 rounded object-cover border border-N30"
-            />
-          ))}
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <Typography variant="p-m" fontWeight="bold" className="truncate">
+            {variant.name}
+          </Typography>
+          {variant.sku && (
+            <span className="text-xs font-mono text-N500 shrink-0">
+              {variant.sku}
+            </span>
+          )}
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <Typography variant="p-s" fontWeight="bold">
+            {money(hasDiscount ? variant.discount?.price : variant.basePrice)}
+          </Typography>
+          {hasDiscount && (
+            <span className="text-xs text-N400 line-through">
+              {money(variant.basePrice)}
+            </span>
+          )}
+          <span className="text-N300">·</span>
+          <Typography
+            variant="p-s"
+            color={variant.quantity < 5 ? "R500" : "N500"}
+          >
+            {variant.quantity} units
+          </Typography>
+        </div>
+        <button
+          onClick={onView}
+          className="mt-1 self-start flex items-center gap-1 text-xs font-semibold text-BR400 hover:text-BR500 transition-colors"
+        >
+          View details <ArrowRight size={13} />
+        </button>
+      </div>
     </div>
   );
 };
@@ -92,6 +258,7 @@ const VariantCard = ({ variant }: { variant: IVariant }) => {
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [activeVariant, setActiveVariant] = useState<IVariant | null>(null);
 
   const { data, isLoading, isError, isFetching, error, refetch } =
     useGetProductByIdQuery({ id: id as string }, { skip: !id });
@@ -115,13 +282,12 @@ const ProductDetails = () => {
   const product = data.data;
   const category =
     typeof product.category === "string" ? null : (product.category as any);
-  const hasDiscount = !!product.discount?.price && product.discount.price > 0;
   const gallery = [product.coverImage, ...(product.images ?? [])].filter(
     Boolean,
   ) as string[];
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500 max-w-[1100px]">
+    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -156,83 +322,22 @@ const ProductDetails = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
-        {/* Left */}
-        <div className="flex flex-col gap-6">
-          {/* Gallery */}
-          {gallery.length > 0 && (
-            <div className="bg-white border border-N30 rounded-xl p-4 flex flex-wrap gap-3">
-              {gallery.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt=""
-                  className={`rounded-lg object-cover border border-N30 ${
-                    i === 0 ? "w-full h-64" : "w-24 h-24"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Description */}
-          <div className="bg-white border border-N30 rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-N20 bg-N10/50 flex items-center gap-2">
-              <Package size={15} className="text-B400" />
-              <Typography variant="h-s" fontWeight="bold">
-                Description
-              </Typography>
-            </div>
-            <div className="p-5">
-              <Typography variant="p-s" color="N600">
-                {product.description}
-              </Typography>
-            </div>
-          </div>
-
-          {/* Variants */}
-          <div className="bg-white border border-N30 rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-N20 bg-N10/50 flex items-center gap-2">
-              <Tag size={15} className="text-B400" />
-              <Typography variant="h-s" fontWeight="bold">
-                Variants ({product.variants?.length ?? 0})
-              </Typography>
-            </div>
-            <div className="p-5 flex flex-col gap-3">
-              {product.variants?.length ? (
-                product.variants.map((v, i) => <VariantCard key={i} variant={v} />)
-              ) : (
-                <Typography variant="p-s" color="N400">
-                  This product has no variants.
-                </Typography>
-              )}
-            </div>
-          </div>
-
-          {/* Per-product analytics */}
-          <ProductAnalytics productId={product._id} />
+      {/* Gallery + key facts */}
+      <div className="grid grid-cols-1 lg:grid-cols-[440px_1fr] gap-6 items-start">
+        <div className="lg:sticky lg:top-4">
+          <ImageCarousel images={gallery} alt={product.name} />
         </div>
 
-        {/* Right */}
         <div className="flex flex-col gap-6">
           <div className="bg-white border border-N30 rounded-xl p-5">
-            <Typography variant="h-s" fontWeight="bold" className="mb-2">
-              Pricing
+            <Typography variant="h-s" fontWeight="bold" className="mb-3">
+              Pricing & stock
             </Typography>
-            <div className="flex items-center gap-2 mb-3">
-              <Typography variant="h-m" fontWeight="bold">
-                {money(hasDiscount ? product.discount?.price : product.basePrice)}
-              </Typography>
-              {hasDiscount && (
-                <span className="text-sm text-N400 line-through">
-                  {money(product.basePrice)}
-                </span>
-              )}
-            </div>
-            {hasDiscount && product.discount?.promotionName && (
-              <InfoRow label="Promotion" value={product.discount.promotionName} />
-            )}
-            <InfoRow label="Base stock" value={`${product.quantity} units`} />
+            <PriceStockFacts
+              basePrice={product.basePrice}
+              discount={product.discount}
+              quantity={product.quantity}
+            />
             <InfoRow
               label="Returnable"
               value={
@@ -250,7 +355,21 @@ const ProductDetails = () => {
               }
             />
             {product.weight && <InfoRow label="Weight" value={product.weight} />}
+            <InfoRow
+              label="Rating"
+              value={`${product.averageRating?.toFixed(1) ?? "0.0"} (${
+                product.totalReviews ?? 0
+              } reviews)`}
+            />
+            <InfoRow label="Total sales" value={product.totalSales ?? 0} />
           </div>
+
+          {product.attributes &&
+            Object.keys(product.attributes).length > 0 && (
+              <Section title="Specifications" icon={<Tag size={15} className="text-BR400" />}>
+                <AttributeList attributes={product.attributes} />
+              </Section>
+            )}
 
           {product.tags?.length > 0 && (
             <div className="bg-white border border-N30 rounded-xl p-5">
@@ -261,7 +380,7 @@ const ProductDetails = () => {
                 {product.tags.map((t) => (
                   <span
                     key={t}
-                    className="px-2.5 py-1 rounded-full bg-B50 text-B400 text-xs font-medium"
+                    className="px-2.5 py-1 rounded-full bg-BR50 text-BR500 text-xs font-medium"
                   >
                     {t}
                   </span>
@@ -271,6 +390,46 @@ const ProductDetails = () => {
           )}
         </div>
       </div>
+
+      {/* Description */}
+      <Section title="Description" icon={<Package size={15} className="text-BR400" />}>
+        <Typography variant="p-s" color="N600">
+          {product.description}
+        </Typography>
+      </Section>
+
+      {/* Variants */}
+      <Section
+        title={`Variants (${product.variants?.length ?? 0})`}
+        icon={<Layers size={15} className="text-BR400" />}
+      >
+        {product.variants?.length ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {product.variants.map((v, i) => (
+              <VariantCard
+                key={v._id ?? i}
+                variant={v}
+                onView={() => setActiveVariant(v)}
+              />
+            ))}
+          </div>
+        ) : (
+          <Typography variant="p-s" color="N400">
+            This product has no variants.
+          </Typography>
+        )}
+      </Section>
+
+      {/* Per-product analytics */}
+      <ProductAnalytics productId={product._id} />
+
+      {/* Orders containing this product */}
+      <ProductOrders productId={product._id} />
+
+      <VariantDetailModal
+        variant={activeVariant}
+        onClose={() => setActiveVariant(null)}
+      />
     </div>
   );
 };

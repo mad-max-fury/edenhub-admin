@@ -1,13 +1,22 @@
+"use client";
+
 import { Plus, Trash2, X } from "lucide-react";
 import {
   useFieldArray,
+  Controller,
+  useWatch,
   type Control,
   type UseFormRegister,
-  type UseFormWatch,
   type FieldErrors,
 } from "react-hook-form";
 
-import { Button, SMSelectDropDown, TextField, Toggle, Typography } from "@/components";
+import {
+  Button,
+  SMSelectDropDown,
+  TextField,
+  Toggle,
+  Typography,
+} from "@/components";
 import {
   ATTRIBUTE_INPUT_TYPES,
   inputTypeNeedsOptions,
@@ -17,12 +26,10 @@ import {
 interface Props {
   control: Control<CategoryFormValues>;
   register: UseFormRegister<CategoryFormValues>;
-  watch: UseFormWatch<CategoryFormValues>;
   errors: FieldErrors<CategoryFormValues>;
   setValue: (name: any, value: any) => void;
 }
 
-// Nested option editor for a single attribute (only for choice-based types).
 const AttributeOptions = ({
   attrIndex,
   control,
@@ -101,19 +108,110 @@ const AttributeOptions = ({
   );
 };
 
-const AttributeBuilder = ({
+const AttributeRow = ({
+  field,
+  index,
   control,
   register,
-  watch,
   errors,
   setValue,
-}: Props) => {
+  onRemove,
+}: {
+  field: { id: string };
+  index: number;
+  control: Control<CategoryFormValues>;
+  register: UseFormRegister<CategoryFormValues>;
+  errors: FieldErrors<CategoryFormValues>;
+  setValue: (name: any, value: any) => void;
+  onRemove: () => void;
+}) => {
+  const currentType = useWatch({
+    control,
+    name: `attributes.${index}.inputType`,
+  });
+
+  const attrError = errors.attributes?.[index];
+
+  return (
+    <div className="border border-N30 rounded-md p-4 flex flex-col gap-3 bg-N0">
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          <TextField
+            label="Attribute name"
+            name={`attributes.${index}.name`}
+            register={register}
+            placeholder="e.g. Size"
+            error={!!attrError?.name}
+            errorText={attrError?.name?.message as string}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="mt-8 p-2 text-N400 hover:text-R400 transition-colors"
+          aria-label="Remove attribute"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+        <Controller
+          control={control}
+          name={`attributes.${index}.inputType`}
+          render={({ field }) => (
+            <SMSelectDropDown
+              label="Input type"
+              options={ATTRIBUTE_INPUT_TYPES as any}
+              value={
+                ATTRIBUTE_INPUT_TYPES.find((o) => o.value === field.value) ??
+                null
+              }
+              onChange={(opt) => {
+                field.onChange(opt.value);
+                if (!inputTypeNeedsOptions(opt.value as string)) {
+                  setValue(`attributes.${index}.options`, []);
+                }
+              }}
+              searchable={false}
+              isError={!!attrError?.inputType}
+              errorText={attrError?.inputType?.message as string}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name={`attributes.${index}.isRequired`}
+          render={({ field }) => (
+            <div className="flex items-center gap-2 md:mt-6">
+              <Toggle
+                label="Required"
+                checked={!!field.value}
+                onChange={(checked) => field.onChange(checked)}
+              />
+            </div>
+          )}
+        />
+      </div>
+
+      {inputTypeNeedsOptions(currentType) && (
+        <AttributeOptions
+          attrIndex={index}
+          control={control}
+          register={register}
+          errors={errors}
+        />
+      )}
+    </div>
+  );
+};
+
+const AttributeBuilder = ({ control, register, errors, setValue }: Props) => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "attributes",
   });
-
-  const attributes = watch("attributes");
 
   return (
     <div className="flex flex-col gap-4">
@@ -123,7 +221,8 @@ const AttributeBuilder = ({
             Attributes
           </Typography>
           <Typography variant="c-s" color="N500">
-            Fields buyers fill in for products in this category (e.g. Size, Color).
+            Fields buyers fill in for products in this category (e.g. Size,
+            Color).
           </Typography>
         </div>
         <Button
@@ -155,78 +254,18 @@ const AttributeBuilder = ({
         </div>
       )}
 
-      {fields.map((field, index) => {
-        const currentType = attributes?.[index]?.inputType;
-        const attrError = errors.attributes?.[index];
-
-        return (
-          <div
-            key={field.id}
-            className="border border-N30 rounded-md p-4 flex flex-col gap-3 bg-N0"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <TextField
-                  label="Attribute name"
-                  name={`attributes.${index}.name`}
-                  register={register}
-                  placeholder="e.g. Size"
-                  error={!!attrError?.name}
-                  errorText={attrError?.name?.message as string}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                className="mt-8 p-2 text-N400 hover:text-R400 transition-colors"
-                aria-label="Remove attribute"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-              <SMSelectDropDown
-                label="Input type"
-                options={ATTRIBUTE_INPUT_TYPES as any}
-                value={
-                  ATTRIBUTE_INPUT_TYPES.find(
-                    (o) => o.value === currentType,
-                  ) as any
-                }
-                onChange={(opt) => {
-                  setValue(`attributes.${index}.inputType`, opt.value);
-                  if (!inputTypeNeedsOptions(opt.value as string)) {
-                    setValue(`attributes.${index}.options`, []);
-                  }
-                }}
-                searchable={false}
-                isError={!!attrError?.inputType}
-                errorText={attrError?.inputType?.message as string}
-              />
-
-              <div className="flex items-center gap-2 md:mt-6">
-                <Toggle
-                  label="Required"
-                  checked={!!attributes?.[index]?.isRequired}
-                  onChange={(checked) =>
-                    setValue(`attributes.${index}.isRequired`, checked)
-                  }
-                />
-              </div>
-            </div>
-
-            {inputTypeNeedsOptions(currentType) && (
-              <AttributeOptions
-                attrIndex={index}
-                control={control}
-                register={register}
-                errors={errors}
-              />
-            )}
-          </div>
-        );
-      })}
+      {fields.map((field, index) => (
+        <AttributeRow
+          key={field.id}
+          field={field}
+          index={index}
+          control={control}
+          register={register}
+          errors={errors}
+          setValue={setValue}
+          onRemove={() => remove(index)}
+        />
+      ))}
     </div>
   );
 };

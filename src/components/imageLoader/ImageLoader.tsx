@@ -26,6 +26,10 @@ const ImageWrapper = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Never render <img src=""> — React warns and the browser re-requests the
+  // page. Treat a missing/empty src as the placeholder state.
+  const hasSrc = typeof src === "string" && src.trim().length > 0;
+
   return (
     <div
       className={cn(
@@ -39,8 +43,13 @@ const ImageWrapper = ({
         height: !fill && height ? height : undefined,
       }}
     >
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 bg-N40 animate-pulse">
+      {(isLoading || !hasSrc) && (
+        <div
+          className={cn(
+            "absolute inset-0 flex items-center justify-center z-10 bg-N40",
+            hasSrc && "animate-pulse",
+          )}
+        >
           {placeholder ? (
             placeholder
           ) : (
@@ -61,7 +70,7 @@ const ImageWrapper = ({
         </div>
       )}
 
-      {!hasError && (
+      {!hasError && hasSrc && (
         <img
           src={src}
           alt={alt}

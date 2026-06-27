@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Upload } from "lucide-react";
+import { Search, Plus, Upload, CheckSquare, X, Percent, Archive, RefreshCw } from "lucide-react";
 
 import {
   Typography,
@@ -12,10 +12,13 @@ import {
   notify,
 } from "@/components";
 import BulkImportProducts from "./BulkImportProducts";
+import { StockModal } from "./StockModal";
 import {
   useGetProductsQuery,
   useUpdateProductStatusMutation,
   useDeleteProductByIdMutation,
+  useBulkUpdateStatusMutation,
+  useBulkUpdateDiscountMutation,
   type IProduct,
 } from "@/redux/api/products";
 import { AuthRouteConfig } from "@/constants/routes";
@@ -57,7 +60,11 @@ const ProductsTable = ({ status }: { status: string }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<ProductRow | null>(null);
+  const [stockTarget, setStockTarget] = useState<ProductRow | null>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDiscountOpen, setBulkDiscountOpen] = useState(false);
+  const [bulkDiscountPct, setBulkDiscountPct] = useState("");
 
   const pageSize = PAGE_SIZE.sm;
 
@@ -71,6 +78,47 @@ const ProductsTable = ({ status }: { status: string }) => {
   const [updateStatus] = useUpdateProductStatusMutation();
   const [deleteProduct, { isLoading: isDeleting }] =
     useDeleteProductByIdMutation();
+  const [bulkStatus, { isLoading: bulkStatusLoading }] = useBulkUpdateStatusMutation();
+  const [bulkDiscount, { isLoading: bulkDiscountLoading }] = useBulkUpdateDiscountMutation();
+
+  const toggleSelect = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+
+  const toggleSelectAll = () => {
+    if (selected.size === rows.length) setSelected(new Set());
+    else setSelected(new Set(rows.map((r) => r._id)));
+  };
+
+  const handleBulkStatus = async (s: "active" | "archived") => {
+    try {
+      await bulkStatus({ ids: [...selected], status: s }).unwrap();
+      notify.success({ message: `${selected.size} products ${s === "archived" ? "archived" : "activated"}` });
+      setSelected(new Set());
+    } catch (err) {
+      notify.error({ message: "Bulk action failed", subtitle: getErrorMessage(err) });
+    }
+  };
+
+  const handleBulkDiscount = async () => {
+    const pct = parseInt(bulkDiscountPct);
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      notify.error({ message: "Enter a valid percentage (0-100)" });
+      return;
+    }
+    try {
+      await bulkDiscount({ ids: [...selected], percentage: pct }).unwrap();
+      notify.success({ message: `Discount applied to ${selected.size} products` });
+      setSelected(new Set());
+      setBulkDiscountOpen(false);
+      setBulkDiscountPct("");
+    } catch (err) {
+      notify.error({ message: "Bulk discount failed", subtitle: getErrorMessage(err) });
+    }
+  };
 
   const rows = useMemo(
     () => (data?.data.data ?? []).map(toRow),
@@ -109,6 +157,9 @@ const ProductsTable = ({ status }: { status: string }) => {
   const columns = getProductColumns({
     onView: (p) => navigate(`${AuthRouteConfig.PRODUCTS}/${p._id}`),
     onEdit: (p) => navigate(`${AuthRouteConfig.PRODUCTS}/${p._id}/edit`),
+    onUpdateStock: (p) => setStockTarget(p),
+    onManageVariants: (p) =>
+      navigate(`${AuthRouteConfig.PRODUCTS}/${p._id}/edit`),
     onArchive: (p) => changeStatus(p, "archived"),
     onRestore: (p) => changeStatus(p, "active"),
     onDelete: (p) => setDeleteTarget(p),
@@ -124,10 +175,35 @@ const ProductsTable = ({ status }: { status: string }) => {
 
   return (
     <section className="bg-white border border-N30">
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 px-6 py-3 bg-B50 border-b border-N30">
+          <button onClick={() => setSelected(new Set())} className="text-N500 hover:text-N700">
+            <X size={16} />
+          </button>
+          <span className="text-sm font-medium text-N700">{selected.size} selected</span>
+          <div className="flex items-center gap-2 ml-auto">
+            <Button size="sm" variant="secondary" onClick={() => handleBulkStatus("active")} disabled={bulkStatusLoading}>
+              <div className="flex items-center gap-1.5"><RefreshCw size={13} /> Activate</div>
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => handleBulkStatus("archived")} disabled={bulkStatusLoading}>
+              <div className="flex items-center gap-1.5"><Archive size={13} /> Archive</div>
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setBulkDiscountOpen(true)}>
+              <div className="flex items-center gap-1.5"><Percent size={13} /> Discount</div>
+            </Button>
+          </div>
+        </div>
+      )}
+
       <TMTable<ProductRow>
         columns={columns}
         data={rows}
         loading={isFetching}
+        selectable
+        selectedIds={selected}
+        onToggleSelect={toggleSelect}
+        onToggleSelectAll={toggleSelectAll}
         headerData={
           <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 gap-4">
             <Typography variant="h-s" fontWeight="bold">
@@ -202,6 +278,46 @@ const ProductsTable = ({ status }: { status: string }) => {
         mobileLayoutType="full"
       >
         <BulkImportProducts onClose={() => setIsImportOpen(false)} />
+      </Modal>
+
+      <StockModal
+        productId={stockTarget?._id ?? null}
+        productName={stockTarget?.name}
+        onClose={() => setStockTarget(null)}
+      />
+
+      {/* Bulk discount modal */}
+      <Modal
+        isOpen={bulkDiscountOpen}
+        onClose={() => { setBulkDiscountOpen(false); setBulkDiscountPct(""); }}
+        title="Apply Bulk Discount"
+        mobileLayoutType="normal"
+      >
+        <div className="p-5 flex flex-col gap-4">
+          <p className="text-sm text-N500">
+            Apply a percentage discount to {selected.size} selected product{selected.size === 1 ? "" : "s"}.
+          </p>
+          <div>
+            <label className="text-xs text-N600 mb-1 block">Discount %</label>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={bulkDiscountPct}
+              onChange={(e) => setBulkDiscountPct(e.target.value)}
+              placeholder="e.g. 15"
+              className="w-full h-10 px-3 border border-N40 rounded text-sm focus:outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="secondary" size="sm" onClick={() => { setBulkDiscountOpen(false); setBulkDiscountPct(""); }}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleBulkDiscount} disabled={bulkDiscountLoading}>
+              {bulkDiscountLoading ? "Applying…" : "Apply"}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </section>
   );

@@ -32,7 +32,7 @@ const OrdersTable = ({ status }: { status: string }) => {
     searchTerm,
     fulfillmentStatus:
       status === "fulfilled"
-        ? "shipped"
+        ? "shipped,delivered"
         : status === "unfulfilled"
           ? "unfulfilled"
           : undefined,
@@ -58,6 +58,11 @@ const OrdersTable = ({ status }: { status: string }) => {
           {customerName(row.original.customer)}
         </Typography>
       ),
+    },
+    {
+      header: "STATUS",
+      accessorKey: "status",
+      cell: ({ row }) => <Badge status={row.original.status} />,
     },
     {
       header: "DATE",
