@@ -40,6 +40,11 @@ interface TMTableProps<T> {
   noBottomSpace?: boolean;
   className?: string;
   headerClassName?: string;
+
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+  onToggleSelectAll?: () => void;
 }
 
 export function TMTable<T>({
@@ -62,6 +67,10 @@ export function TMTable<T>({
   noBottomSpace,
   className,
   headerClassName,
+  selectable,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
 }: TMTableProps<T>) {
   const activePage = metadata?.currentPage ?? page ?? 1;
   const activePageSize = metadata?.pageSize ?? pageSize ?? 10;
@@ -116,6 +125,16 @@ export function TMTable<T>({
             <thead className="bg-N20">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className={cn(headerClassName)}>
+                  {selectable && (
+                    <th className="px-3 py-4 w-10">
+                      <input
+                        type="checkbox"
+                        checked={!!data.length && selectedIds?.size === data.length}
+                        onChange={onToggleSelectAll}
+                        className="accent-BR500 w-4 h-4 cursor-pointer"
+                      />
+                    </th>
+                  )}
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
@@ -134,27 +153,41 @@ export function TMTable<T>({
             <tbody className="divide-y divide-N40">
               <AnimatePresence mode="wait">
                 {rows.length > 0
-                  ? rows.map((row) => (
-                      <motion.tr
-                        key={row.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="transition-colors hover:bg-N10"
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <td
-                            key={cell.id}
-                            className="whitespace-nowrap px-6 py-4 text-sm text-N900"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </td>
-                        ))}
-                      </motion.tr>
-                    ))
+                  ? rows.map((row) => {
+                      const rowId = (row.original as Record<string, unknown>)?._id as string | undefined;
+                      const isSelected = rowId ? selectedIds?.has(rowId) : false;
+                      return (
+                        <motion.tr
+                          key={row.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className={cn("transition-colors hover:bg-N10", isSelected && "bg-B50")}
+                        >
+                          {selectable && rowId && (
+                            <td className="px-3 py-4 w-10">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => onToggleSelect?.(rowId)}
+                                className="accent-BR500 w-4 h-4 cursor-pointer"
+                              />
+                            </td>
+                          )}
+                          {row.getVisibleCells().map((cell) => (
+                            <td
+                              key={cell.id}
+                              className="whitespace-nowrap px-6 py-4 text-sm text-N900"
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </td>
+                          ))}
+                        </motion.tr>
+                      );
+                    })
                   : null}
               </AnimatePresence>
             </tbody>

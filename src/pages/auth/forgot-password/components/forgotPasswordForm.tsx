@@ -3,7 +3,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { TextField, Button, AppLogo } from "@/components";
+import { TextField, Button, AppLogo, notify } from "@/components";
 import { useNavigate } from "react-router-dom";
 import { forgotPasswordSchema } from "../../schema";
 import type {
@@ -12,6 +12,8 @@ import type {
 } from "../../interfaces";
 import AuthWrapper from "../../AuthWrapper";
 import { AuthRouteConfig } from "@/constants/routes";
+import { useForgotPasswordMutation } from "@/redux/api";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 
 interface IForgotPasswordFormProps {
   setFilter: React.Dispatch<React.SetStateAction<IForgotPasswordFilterProps>>;
@@ -19,6 +21,7 @@ interface IForgotPasswordFormProps {
 
 export const ForgotPasswordForm = ({ setFilter }: IForgotPasswordFormProps) => {
   const navigate = useNavigate();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const {
     register,
@@ -29,11 +32,20 @@ export const ForgotPasswordForm = ({ setFilter }: IForgotPasswordFormProps) => {
   });
 
   const onSubmit = async (data: IForgotPasswordPayload) => {
-    // Instead of router.push, you can navigate to OTP page if needed
-    // navigate(`/c/verify-otp?email=${data.email}`);
-
-    // For now, we set the filter as before
-    setFilter({ isSubmitted: true, email: data.email });
+    try {
+      await forgotPassword({ email: data.email }).unwrap();
+      setFilter({ isSubmitted: true, email: data.email });
+      notify.success({
+        message: "Reset code sent",
+        subtitle: "Check your email for the verification code",
+      });
+      navigate(AuthRouteConfig.VERIFY_OTP, { state: { email: data.email } });
+    } catch (error) {
+      notify.error({
+        message: "Could not send reset code",
+        subtitle: getErrorMessage(error),
+      });
+    }
   };
 
   return (
@@ -57,8 +69,13 @@ export const ForgotPasswordForm = ({ setFilter }: IForgotPasswordFormProps) => {
           error={!!errors.email}
           errorText={errors.email?.message}
         />
-        <Button variant="brown-light" className="w-full capitalize">
-          send reset link
+        <Button
+          type="submit"
+          variant="brown-light"
+          className="w-full capitalize"
+          loading={isLoading}
+        >
+          send reset code
         </Button>
       </form>
     </AuthWrapper>

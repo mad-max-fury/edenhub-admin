@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { Button, Typography } from "@/components";
+import { Button, Typography, SMSelectDropDown } from "@/components";
 import Card from "@/components/Cards/Card";
 import SalesChart from "../dashboard/components/salesReport/SalesReport";
 import {
@@ -29,6 +29,14 @@ const RANGES: { label: string; value: AnalyticsRange }[] = [
   { label: "Last 90 days", value: "90d" },
   { label: "Last 12 months", value: "12m" },
   { label: "All time", value: "all" },
+];
+
+const CHART_PERIODS: { label: string; value: AnalyticsRange }[] = [
+  { label: "7D", value: "7d" },
+  { label: "30D", value: "30d" },
+  { label: "90D", value: "90d" },
+  { label: "12M", value: "12m" },
+  { label: "All", value: "all" },
 ];
 
 const Analytics = () => {
@@ -78,7 +86,10 @@ const Analytics = () => {
 
   const downloadReport = () => {
     const lines: string[][] = [];
-    lines.push(["EdenHub Analytics Report", RANGES.find((r) => r.value === range)?.label ?? range]);
+    lines.push([
+      "EdenHub Analytics Report",
+      RANGES.find((r) => r.value === range)?.label ?? range,
+    ]);
     lines.push([]);
     lines.push(["Metric", "Value"]);
     lines.push(["Revenue", String(s?.revenue ?? 0)]);
@@ -99,7 +110,9 @@ const Analytics = () => {
     );
     lines.push([]);
     lines.push(["Revenue Timeline", "Period", "Revenue", "Orders"]);
-    series.forEach((p) => lines.push(["", p.period, String(p.revenue), String(p.orders)]));
+    series.forEach((p) =>
+      lines.push(["", p.period, String(p.revenue), String(p.orders)]),
+    );
 
     const csv = lines
       .map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
@@ -127,17 +140,14 @@ const Analytics = () => {
           </Typography>
         </div>
         <div className="flex items-center gap-3">
-          <select
-            value={range}
-            onChange={(e) => setRange(e.target.value as AnalyticsRange)}
-            className="border border-N40 rounded-lg px-3 py-2 text-sm bg-white"
-          >
-            {RANGES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+          <div className="w-44">
+            <SMSelectDropDown
+              size="sm"
+              options={RANGES}
+              value={RANGES.find((r) => r.value === range) ?? null}
+              onChange={(opt) => setRange(opt.value as AnalyticsRange)}
+            />
+          </div>
           <Button size="sm" onClick={downloadReport}>
             <div className="flex items-center gap-1.5">
               <Download size={14} /> Download report
@@ -155,7 +165,16 @@ const Analytics = () => {
 
       {/* Revenue timeline */}
       <section className="bg-white border border-N30 rounded-lg p-4 h-[380px]">
-        <SalesChart data={chartData} title="Revenue over time" />
+        <SalesChart
+          data={chartData}
+          title="Revenue over time"
+          periods={CHART_PERIODS.map((r) => r.label) ?? ""}
+          activePeriod={CHART_PERIODS.find((r) => r.value === range)?.label}
+          onPeriodChange={(opt) => {
+            const val = CHART_PERIODS.find((r) => r.label === opt)?.value;
+            setRange(val as AnalyticsRange);
+          }}
+        />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -206,7 +225,14 @@ const Analytics = () => {
                 }))}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={11} interval={0} angle={-15} textAnchor="end" height={50} />
+                <XAxis
+                  dataKey="name"
+                  fontSize={11}
+                  interval={0}
+                  angle={-15}
+                  textAnchor="end"
+                  height={50}
+                />
                 <YAxis fontSize={11} />
                 <Tooltip formatter={(v: number | undefined) => money(v)} />
                 <Bar dataKey="revenue" fill="#74594D" radius={[4, 4, 0, 0]} />
@@ -248,7 +274,11 @@ const Analytics = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded bg-N10 overflow-hidden">
                           {p.image && (
-                            <img src={p.image} alt="" className="w-full h-full object-cover" />
+                            <img
+                              src={p.image}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
                           )}
                         </div>
                         {p.name}

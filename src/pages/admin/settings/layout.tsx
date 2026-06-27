@@ -1,13 +1,23 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { Typography } from "@/components";
 import { cn } from "@/utils/helpers";
-import { User, ShieldCheck, Bell } from "lucide-react";
+import {
+  User,
+  ShieldCheck,
+  Bell,
+  Megaphone,
+  Star,
+  HelpCircle,
+} from "lucide-react";
 
 const SettingsLayout = () => {
   const navItems = [
     { label: "Profile", path: "profile", icon: <User size={18} /> },
     { label: "Security", path: "security", icon: <ShieldCheck size={18} /> },
     { label: "Notifications", path: "notifications", icon: <Bell size={18} /> },
+    { label: "Ads & Campaigns", path: "ads", icon: <Megaphone size={18} /> },
+    { label: "Shop Reviews", path: "reviews", icon: <Star size={18} /> },
+    { label: "FAQs", path: "faqs", icon: <HelpCircle size={18} /> },
   ];
 
   return (

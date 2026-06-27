@@ -32,6 +32,19 @@ export function Modal({
         <Dialog.Overlay className="fixed inset-0 z-[99] bg-[#091E428A] backdrop-blur-[2px] data-[state=open]:animate-fadeIn" />
 
         <Dialog.Content
+          // A react-select menu portals to #select-portal (outside this dialog).
+          // Don't treat clicks/focus inside it as "outside" — otherwise picking
+          // an option would close the modal.
+          onPointerDownOutside={(e) => {
+            const t = (e.detail?.originalEvent?.target ??
+              e.target) as HTMLElement | null;
+            if (t?.closest?.("#select-portal")) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            const t = (e.detail?.originalEvent?.target ??
+              e.target) as HTMLElement | null;
+            if (t?.closest?.("#select-portal")) e.preventDefault();
+          }}
           className={cn(
             "fixed left-1/2 top-1/2 z-[100] w-[95%] max-w-[744px] -translate-x-1/2 -translate-y-1/2 bg-N0 shadow-2xl transition-all duration-300",
             "data-[state=open]:animate-scaleIn focus:outline-none",

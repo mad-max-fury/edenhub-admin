@@ -53,6 +53,11 @@ const NotificationSettings = lazy(
   () => import("@/pages/admin/settings/notifications"),
 );
 const SecuritySettings = lazy(() => import("@/pages/admin/settings/security"));
+const AdsSettings = lazy(() => import("@/pages/admin/settings/ads"));
+const ReviewSettings = lazy(() => import("@/pages/admin/settings/reviews"));
+const FaqSettings = lazy(() => import("@/pages/admin/settings/faqs"));
+const Messages = lazy(() => import("@/pages/admin/messages"));
+const Disputes = lazy(() => import("@/pages/admin/disputes"));
 const withSuspense = (Component: ComponentType) => (
   <Suspense fallback={<PageLoader />}>
     <Component />
@@ -116,6 +121,8 @@ export const router = createBrowserRouter([
           },
           { path: "audit-trail", element: withSuspense(AuditTrail) },
           { path: "notifications", element: withSuspense(Notifications) },
+          { path: "messages", element: withSuspense(Messages) },
+          { path: "disputes", element: withSuspense(Disputes) },
           {
             path: "settings",
             element: withSuspense(SettingsLayout),
@@ -130,6 +137,9 @@ export const router = createBrowserRouter([
                 path: "notifications",
                 element: withSuspense(NotificationSettings),
               },
+              { path: "ads", element: withSuspense(AdsSettings) },
+              { path: "reviews", element: withSuspense(ReviewSettings) },
+              { path: "faqs", element: withSuspense(FaqSettings) },
             ],
           },
           { path: "*", element: <NotFound /> },

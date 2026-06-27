@@ -22,12 +22,20 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
       gold: "bg-LB300 hover:bg-LB400 text-N0 disabled:bg-LB75 disabled:text-N20 disabled:cursor-not-allowed", // brown
       "brown-light":
         "bg-BR400 hover:bg-BR300 text-N0 disabled:bg-BR75 disabled:text-N20 disabled:cursor-not-allowed", // brown light
+      success:
+        "bg-G400 hover:bg-G300 text-N0 disabled:bg-G75 disabled:text-N70 disabled:cursor-not-allowed", // green
+      info: "bg-P400 hover:bg-P300 text-N0 disabled:bg-P75 disabled:text-N70 disabled:cursor-not-allowed", // purple
+      accent:
+        "bg-T400 hover:bg-T300 text-N0 disabled:bg-T75 disabled:text-N70 disabled:cursor-not-allowed", // teal
       plain:
         "bg-transparent text-N0 hover:bg-N20 hover:text-BR500 disabled:bg-N20 disabled:text-N70 disabled:cursor-not-allowed border border-N0", // plain
     },
     size: {
-      default: "p-[12px]",
-      sm: "p-[10px]",
+      xs: "px-2 py-1 text-c-s",
+      sm: "p-2.5 ",
+      default: "p-3",
+      lg: "px-5 py-3.5",
+      xl: "px-7 py-4",
       plain: "",
     },
     types: {
@@ -83,6 +91,24 @@ const buttonVariants = cva(" transition-all ease-in-out duration-400", {
       className:
         "bg-transparent text-LB400 border border-LB400 hover:border-transparent hover:text-N0",
     },
+    {
+      types: "outline",
+      variant: "success",
+      className:
+        "bg-transparent text-G400 border border-G400 hover:border-transparent hover:text-N0",
+    },
+    {
+      types: "outline",
+      variant: "info",
+      className:
+        "bg-transparent text-P400 border border-P400 hover:border-transparent hover:text-N0",
+    },
+    {
+      types: "outline",
+      variant: "accent",
+      className:
+        "bg-transparent text-T400 border border-T400 hover:border-transparent hover:text-N0",
+    },
   ],
   defaultVariants: {
     variant: "primary",
@@ -111,6 +137,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       asChild = false,
       loading = false,
+      type,
       ...props
     },
     ref,
@@ -124,7 +151,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           buttonVariants({ variant, size, types, shape, className }),
           "flex items-center justify-center gap-4",
         )}
-        {...(!asChild ? props : {})}
+        // Default to type="button" so a Button inside a <form> never submits it
+        // unless it explicitly opts in with type="submit".
+        {...(!asChild ? { type: type ?? "button", ...props } : {})}
       >
         {asChild ? (
           children
@@ -137,8 +166,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             }
           />
         ) : (
-          <Typography variant="p-m" className="!text-[inherit]">
-            <span>{children}</span>
+          <Typography tag="span" variant="p-s" className="!text-[inherit]">
+            {children}
           </Typography>
         )}
       </Comp>

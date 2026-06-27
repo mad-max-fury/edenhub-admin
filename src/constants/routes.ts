@@ -12,5 +12,7 @@ export const AuthRouteConfig = {
   USER_MANAGEMENT: "/admin/user-management",
   USER_MANAGEMENT_MANAGE_MENU: "/admin/user-management/menus",
   AUDIT_TRAIL: "/admin/audit-trail",
+  MESSAGES: "/admin/messages",
+  DISPUTES: "/admin/disputes",
   SETTINGS: "/admin/settings",
 };

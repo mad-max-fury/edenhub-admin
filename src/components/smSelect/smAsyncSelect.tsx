@@ -9,6 +9,11 @@ import {
 } from "react-select";
 import AsyncSelect from "react-select/async";
 
+const menuPortalTarget =
+  typeof document !== "undefined"
+    ? (document.getElementById("select-portal") ?? document.body)
+    : undefined;
+
 import { Avatar } from "../avatar";
 import { Typography } from "../typography";
 import { ValidationText } from "../validationText";
@@ -50,6 +55,7 @@ const selectStyles = ({
       border: "none",
     },
   }),
+  menuPortal: (base: any) => ({ ...base, zIndex: 9999, pointerEvents: "auto" }),
   menu: (provided: any) => ({
     ...provided,
     overflowY: "auto",
@@ -73,23 +79,30 @@ const selectStyles = ({
   }),
   control: (
     styles: any,
-    { isDisabled, isFocused }: { isDisabled: boolean; isFocused: boolean }
+    { isDisabled, isFocused }: { isDisabled: boolean; isFocused: boolean },
   ) => ({
     ...styles,
     borderRadius: "4px",
     outline: "none",
     cursor: "pointer",
-    border: `1px solid ${isError ? "red" : "#dfe1e6"}`,
+    // Apply focused border at the top level, not just inside &:hover
+    border: isError
+      ? "1px solid var(--color-R400)"
+      : isFocused
+        ? "1px solid var(--color-BR400)"
+        : "1px solid var(--color-N40)",
+    // Kill react-select's default blue box-shadow focus ring
+    boxShadow: "none",
     minHeight: "40px",
     width: "100%",
-    color: isDisabled ? "#97a0af" : "#97a0af",
-    backgroundColor: isDisabled || bgColor ? "#f4f5f7" : "#ffffff",
+    color: "var(--color-N80)",
+    backgroundColor:
+      isDisabled || bgColor ? "var(--color-N20)" : "var(--color-N0)",
     "&:hover": {
-      border: isFocused
-        ? "1px solid #0052CC"
-        : isError
-        ? "1px solid red"
-        : "1px solid #dfe1e6",
+      border: isError
+        ? "1px solid var(--color-R400)"
+        : "1px solid var(--color-BR400)",
+      boxShadow: "none",
     },
   }),
   option: (
@@ -98,22 +111,30 @@ const selectStyles = ({
       isDisabled,
       isFocused,
       isSelected,
-    }: { isDisabled: boolean; isFocused: boolean; isSelected: boolean }
+    }: { isDisabled: boolean; isFocused: boolean; isSelected: boolean },
   ) => ({
     ...styles,
     fontSize: "14px",
     fontWeight: 400,
     lineHeight: "20px",
     cursor: "pointer",
-    color: isDisabled ? "#97a0af" : "#172B4D",
-    textWrap: "nowrap",
-    backgroundColor: isDisabled
-      ? "#f4f5f7"
+    // Selected: brown text; disabled: muted; default: dark
+    color: isDisabled
+      ? "var(--color-N80)"
       : isSelected
-      ? "#EBECF0"
-      : "#ffffff",
+        ? "var(--color-BR500)"
+        : "var(--color-N800)",
+    textWrap: "nowrap",
+    // Selected: light brown bg; disabled: light grey; default: white
+    backgroundColor: isDisabled
+      ? "var(--color-N20)"
+      : isSelected
+        ? "var(--color-LB75)"
+        : "var(--color-N0)",
     "&:hover": {
-      backgroundColor: isSelected ? "#EBECF0" : "#DFE1E6",
+      // Hover: very light brown; keep selected bg consistent
+      backgroundColor: isSelected ? "var(--color-LB75)" : "var(--color-LB50)",
+      color: isDisabled ? "var(--color-N80)" : "var(--color-BR500)",
     },
   }),
   placeholder: (styles: any) => ({
@@ -121,7 +142,7 @@ const selectStyles = ({
     fontSize: "14px",
     fontWeight: 400,
     lineHeight: "20px",
-    color: "#97a0af",
+    color: "var(--color-N80)",
   }),
   valueContainer: (styles: any) => ({
     ...styles,
@@ -136,7 +157,7 @@ const selectStyles = ({
   }),
   dropdownIndicator: (styles: any) => ({
     ...styles,
-    color: "#42526E",
+    color: "var(--color-N500)",
     fontSize: "14px",
   }),
   autosizeInput: (styles: any) => ({
@@ -168,7 +189,7 @@ export const SmAsyncSelect = forwardRef<any, SmAsyncSelectProps>(
       field,
       isMulti = false,
     },
-    ref
+    ref,
   ) => {
     const handleChange = (value: OptionType) => {
       onChange(value);
@@ -182,7 +203,6 @@ export const SmAsyncSelect = forwardRef<any, SmAsyncSelectProps>(
             src={props?.data?.icon}
             size={"sm"}
           />
-
           <div>
             <Typography variant="p-s" fontWeight="regular" color={"N700"}>
               {props.data.label}
@@ -204,7 +224,6 @@ export const SmAsyncSelect = forwardRef<any, SmAsyncSelectProps>(
           src={props?.data?.icon}
           size={"sm"}
         />
-
         <div>
           <Typography variant="p-s" fontWeight="regular" color={"N700"}>
             {props.data.label}
@@ -238,7 +257,7 @@ export const SmAsyncSelect = forwardRef<any, SmAsyncSelectProps>(
           className={cn(
             `${
               flexStyle === "row" && "col-span-9"
-            } group [&:hover_div.sig]:!hidden [&_div.sig]:absolute [&_div.sig]:pl-3`
+            } group [&:hover_div.sig]:!hidden [&_div.sig]:absolute [&_div.sig]:pl-3`,
           )}
         >
           <AsyncSelect
@@ -254,6 +273,8 @@ export const SmAsyncSelect = forwardRef<any, SmAsyncSelectProps>(
             isSearchable={searchable}
             id={id}
             isMulti={isMulti}
+            menuPortalTarget={menuPortalTarget}
+            menuPosition="fixed"
             styles={selectStyles({ isError, bgColor })}
             components={
               varient === "simple"
@@ -268,7 +289,7 @@ export const SmAsyncSelect = forwardRef<any, SmAsyncSelectProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 SmAsyncSelect.displayName = "SmAsyncSelect";

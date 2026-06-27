@@ -14,22 +14,24 @@ import {
 import { verifyOtpSchema } from "../schema";
 import { type IVerifyOtpPayload } from "../interfaces";
 import { AuthRouteConfig } from "@/constants/routes";
+import { useForgotPasswordMutation } from "@/redux/api";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 
 const RESEND_INTERVAL = 60;
 
 const VerifyOtpPage = () => {
   const navigate = useNavigate();
+  const [forgotPassword] = useForgotPasswordMutation();
 
   const location = useLocation();
-  const email = location.state?.email;
+  const email = location.state?.email as string | undefined;
 
-  // useEffect(() => {
-  //   if (!email) {
-  //     navigate(AuthRouteConfig.FORGOT_PASSWORD, { replace: true });
-  //   }
-  // }, [email, navigate]);
-
-  // if (!email) return null;
+  // Without an email in route state there is nothing to reset — go back.
+  useEffect(() => {
+    if (!email) {
+      navigate(AuthRouteConfig.FORGOT_PASSWORD, { replace: true });
+    }
+  }, [email, navigate]);
 
   const {
     control,
@@ -56,28 +58,34 @@ const VerifyOtpPage = () => {
     return () => clearInterval(countdown);
   }, [timer]);
 
-  const handleResend = useCallback(() => {
-    // TODO: Call API to resend OTP here
-    console.log("Resending OTP to:", email);
+  const handleResend = useCallback(async () => {
+    if (!email) return;
+    try {
+      await forgotPassword({ email }).unwrap();
+      notify.success({ message: "A new code has been sent to your email" });
+      setCanResend(false);
+      setTimer(RESEND_INTERVAL);
+    } catch (error) {
+      notify.error({
+        message: "Could not resend code",
+        subtitle: getErrorMessage(error),
+      });
+    }
+  }, [email, forgotPassword]);
 
-    setCanResend(false);
-    setTimer(RESEND_INTERVAL);
-  }, [email]);
-
+  // The backend verifies the code at reset time, so carry the code forward to
+  // the new-password step (via the :token route param) along with the email.
   const onSubmit = async (data: IVerifyOtpPayload) => {
-    const token = "mock-reset-token"; // Ideally fetched after verifying the OTP
-    navigate(AuthRouteConfig.LOGIN);
-    notify.success({
-      message: "Account successfully Verified",
-      subtitle: "Your account has been verified, proceed to log in",
+    navigate(`/reset-password/${encodeURIComponent(data.otp)}`, {
+      state: { email },
     });
   };
 
   return (
     <AuthWrapper
       icon={<AppLogo />}
-      title="Verify your Account"
-      description={`We’ve sent a One-Time Password (OTP) to your email address to verify your account.`}
+      title="Enter verification code"
+      description={`Enter the code we sent to ${email ?? "your email"} to reset your password.`}
       hideAuthOptions
       linkText="Go to"
       linkSubText="Sign in"

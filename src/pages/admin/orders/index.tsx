@@ -1,8 +1,14 @@
 import { useState } from "react";
+import { RefreshCw } from "lucide-react";
 import Card from "@/components/Cards/Card";
 import { Tab } from "@/components/tabs/tab";
+import { Button, Typography, notify } from "@/components";
 import OrdersTable from "@/pages/admin/orders/components/ordersTable";
-import { useGetOrderStatsQuery } from "@/redux/api/orders";
+import {
+  useGetOrderStatsQuery,
+  useReconcilePendingMutation,
+} from "@/redux/api/orders";
+import { getErrorMessage } from "@/utils/getErrorMessges";
 
 type OrderTab = "all" | "fulfilled" | "unfulfilled";
 
@@ -13,6 +19,20 @@ const OrdersPage = () => {
   const [activeTab, setActiveTab] = useState<OrderTab>("all");
   const { data: statsRes } = useGetOrderStatsQuery();
   const stats = statsRes?.data;
+
+  const [reconcile, { isLoading: reconciling }] = useReconcilePendingMutation();
+
+  const handleReconcile = async () => {
+    try {
+      const res = await reconcile().unwrap();
+      notify.success({ message: res.message });
+    } catch (err) {
+      notify.error({
+        message: "Reconcile failed",
+        subtitle: getErrorMessage(err),
+      });
+    }
+  };
 
   const cards = [
     {
@@ -57,6 +77,27 @@ const OrdersPage = () => {
 
   return (
     <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <Typography variant="h-m" fontWeight="bold">
+            Orders
+          </Typography>
+          <Typography variant="p-s" color="N500">
+            Reconcile re-checks every pending order with Paystack and cancels
+            abandoned ones (restoring stock).
+          </Typography>
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          loading={reconciling}
+          onClick={handleReconcile}
+        >
+          <span className="flex items-center gap-1.5">
+            <RefreshCw size={14} /> Reconcile pending
+          </span>
+        </Button>
+      </div>
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((card, idx) => (

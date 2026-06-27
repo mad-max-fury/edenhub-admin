@@ -52,7 +52,7 @@ export const CoverUpload = ({
             type="button"
             onClick={() => ref.current?.click()}
             className={`w-full h-full flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl transition-all duration-150
-              ${error ? "border-R300 bg-R50/30" : "border-N40 bg-N10 hover:border-B200 hover:bg-B50/30"}`}
+              ${error ? "border-R300 bg-R50/30" : "border-N40 bg-N10 hover:border-BR200 hover:bg-BR50/30"}`}
           >
             <div className="w-14 h-14 rounded-2xl bg-white border border-N30 shadow-sm flex items-center justify-center">
               <ImagePlus
@@ -146,7 +146,7 @@ export const ThumbnailGrid = ({
           <button
             type="button"
             onClick={() => ref.current?.click()}
-            className="w-[72px] h-[72px] rounded-lg border-2 border-dashed border-N40 hover:border-B200 hover:bg-B50/50 flex flex-col items-center justify-center gap-1 transition-all duration-150 shrink-0"
+            className="w-[72px] h-[72px] rounded-lg border-2 border-dashed border-N40 hover:border-BR200 hover:bg-BR50/50 flex flex-col items-center justify-center gap-1 transition-all duration-150 shrink-0"
           >
             <ImagePlus size={18} className="text-N300" />
             <span className="text-[10px] font-medium text-N400">Add</span>

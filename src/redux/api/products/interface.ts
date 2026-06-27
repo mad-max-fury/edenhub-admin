@@ -23,10 +23,21 @@ export interface IVariant {
   isActive?: boolean;
 }
 
+export interface IEngraving {
+  available: boolean;
+  fee: number;
+  maxCharacters: number;
+  maxLines: number;
+  fonts: string[];
+}
+
 export interface IProduct {
   _id: string;
   name: string;
+  slug?: string;
   description: string;
+  metaTitle?: string;
+  metaDescription?: string;
   brand?: string;
   category: ICategory | ICategoryParent | string;
   basePrice: number;
@@ -36,16 +47,25 @@ export interface IProduct {
   tags: string[];
   coverImage?: string;
   images: string[];
+  videos?: string[];
   weight?: string;
   isReturnable: boolean;
   returnableDays?: number;
   hasWarranty: boolean;
   warrantyYears?: number;
+  engraving?: IEngraving;
   variants: IVariant[];
   status: ProductStatus;
+  audience?: "men" | "women" | "unisex";
   averageRating: number;
   totalReviews: number;
   totalSales: number;
+  viewCount?: number;
+  lowStockThreshold?: number;
+  scheduledPublishAt?: string;
+  variationGroup?: string;
+  variationLabel?: string;
+  variationValue?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -53,6 +73,8 @@ export interface IProduct {
 export interface ICreateProduct {
   name: string;
   description: string;
+  metaTitle?: string;
+  metaDescription?: string;
   brand?: string;
   category: string;
   basePrice: number;
@@ -62,13 +84,31 @@ export interface ICreateProduct {
   tags?: string[];
   coverImage?: string;
   images?: string[];
+  videos?: string[];
   weight?: string;
   isReturnable?: boolean;
   returnableDays?: number;
   hasWarranty?: boolean;
   warrantyYears?: number;
+  engraving?: IEngraving;
   variants?: IVariant[];
   status?: ProductStatus;
+  audience?: "men" | "women" | "unisex";
+  lowStockThreshold?: number;
+  scheduledPublishAt?: string;
+  variationGroup?: string;
+  variationLabel?: string;
+  variationValue?: string;
+}
+
+export interface IBulkStatusPayload {
+  ids: string[];
+  status: ProductStatus;
+}
+
+export interface IBulkDiscountPayload {
+  ids: string[];
+  percentage: number;
 }
 
 export interface IUpdateProduct extends Partial<ICreateProduct> {
@@ -123,6 +163,7 @@ export interface IBulkProductInput {
   returnableDays?: number;
   hasWarranty?: boolean;
   warrantyYears?: number;
+  engraving?: IEngraving;
   variants?: IVariant[];
   status?: ProductStatus;
 }

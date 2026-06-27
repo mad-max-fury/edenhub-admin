@@ -66,6 +66,11 @@ export interface ProductFormData {
   returnableDays?: number;
   hasWarranty: boolean;
   warrantyYears?: number;
+  engravingAvailable: boolean;
+  engravingFee?: number;
+  engravingMaxCharacters?: number;
+  engravingMaxLines?: number;
+  engravingFonts?: string;
   weight?: string;
   tags: ISelectItem[];
   category: ISelectItem;
@@ -74,4 +79,13 @@ export interface ProductFormData {
   pictures: ProductPicture[];
   attributes: Record<string, string | undefined>;
   variants: IVariant[];
+  metaTitle?: string;
+  metaDescription?: string;
+  audience?: string;
+  videoUrls?: string;
+  lowStockThreshold?: number;
+  scheduledPublishAt?: string;
+  variationGroup?: string;
+  variationLabel?: string;
+  variationValue?: string;
 }
