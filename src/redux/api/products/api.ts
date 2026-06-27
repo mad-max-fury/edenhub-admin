@@ -4,8 +4,10 @@ import { tagTypes } from "@/redux/baseApi/tagTypes";
 import type { IPaginatedResponse, IResponse } from "../genericInterface";
 import type {
   IAddVariant,
+  IBulkDiscountPayload,
   IBulkProductsPayload,
   IBulkProductsResult,
+  IBulkStatusPayload,
   ICreateProduct,
   IProduct,
   IProductListQuery,
@@ -137,6 +139,32 @@ export const productApi = baseApi.injectEndpoints({
         { type: tagTypes.GET_PRODUCT },
       ],
     }),
+
+    bulkUpdateStatus: builder.mutation<IResponse, IBulkStatusPayload>({
+      query: (data) => ({
+        url: `${baseName}/bulk/status`,
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: [{ type: tagTypes.GET_PRODUCTS }],
+    }),
+
+    bulkUpdateDiscount: builder.mutation<IResponse, IBulkDiscountPayload>({
+      query: (data) => ({
+        url: `${baseName}/bulk/discount`,
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: [{ type: tagTypes.GET_PRODUCTS }],
+    }),
+
+    getLowStockProducts: builder.query<IResponse<IProduct[]>, void>({
+      query: () => ({
+        url: `${baseName}/low-stock`,
+        method: "GET",
+      }),
+      providesTags: [{ type: tagTypes.GET_PRODUCTS }],
+    }),
   }),
 });
 
@@ -152,4 +180,7 @@ export const {
   useAddVariantMutation,
   useUpdateVariantMutation,
   useRemoveVariantMutation,
+  useBulkUpdateStatusMutation,
+  useBulkUpdateDiscountMutation,
+  useGetLowStockProductsQuery,
 } = productApi;

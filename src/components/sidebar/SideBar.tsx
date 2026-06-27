@@ -228,7 +228,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <ImageWrapper
                 src={userProfile.avatar}
                 alt={userProfile.name}
-                className="w-9 h-9 rounded-lg object-cover"
+                className="w-9 h-9 rounded-lg object-cover object-center"
               />
               <div className="flex-1 text-left">
                 <Typography

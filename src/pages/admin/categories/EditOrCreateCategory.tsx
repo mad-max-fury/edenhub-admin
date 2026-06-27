@@ -24,8 +24,8 @@ import { getErrorMessage } from "@/utils/getErrorMessges";
 
 import AttributeBuilder from "./AttributeBuilder";
 import { categorySchema, type CategoryFormValues } from "./schema";
+import ImageWrapper from "@/components/imageLoader/ImageLoader";
 
-// Max nesting depth must mirror the backend MAX_CATEGORY_DEPTH.
 const MAX_CATEGORY_DEPTH = 3;
 
 type Props = {
@@ -66,18 +66,15 @@ const EditOrCreateCategory = ({ initialData, onClose }: Props) => {
       parent: parentId(initialData?.parent),
       image: initialData?.image ?? "",
       isActive: initialData?.isActive ?? true,
-      attributes: (initialData?.attributes ?? []) as CategoryFormValues["attributes"],
+      attributes: (initialData?.attributes ??
+        []) as CategoryFormValues["attributes"],
     },
   });
 
-  // Only categories that can legally hold a child (level < max), excluding the
-  // category being edited. Backend still guards cycles/descendant moves.
   const parentOptions = useMemo(() => {
     const list = categoriesRes?.data ?? [];
     return list
-      .filter(
-        (c) => c.level < MAX_CATEGORY_DEPTH && c._id !== initialData?._id,
-      )
+      .filter((c) => c.level < MAX_CATEGORY_DEPTH && c._id !== initialData?._id)
       .map((c) => ({
         label: "—".repeat(c.level - 1) + (c.level > 1 ? " " : "") + c.name,
         value: c._id,
@@ -87,9 +84,7 @@ const EditOrCreateCategory = ({ initialData, onClose }: Props) => {
   const selectedParent = watch("parent");
   const isActive = watch("isActive");
 
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -166,15 +161,15 @@ const EditOrCreateCategory = ({ initialData, onClose }: Props) => {
       className="flex flex-col h-full animate-in fade-in duration-500"
     >
       <div className="flex-1 overflow-y-auto flex flex-col gap-6 p-6">
-        {/* Image */}
         <div className="flex items-center gap-4">
           <div className="relative w-20 h-20 rounded-md border border-N40 bg-N10 overflow-hidden flex items-center justify-center">
             {imagePreview ? (
               <>
-                <img
+                <ImageWrapper
                   src={imagePreview}
                   alt="Category"
                   className="w-full h-full object-cover"
+                  fill
                 />
                 <button
                   type="button"
@@ -235,9 +230,7 @@ const EditOrCreateCategory = ({ initialData, onClose }: Props) => {
           label="Parent category"
           placeholder="None (top-level category)"
           options={parentOptions}
-          value={
-            parentOptions.find((o) => o.value === selectedParent) ?? null
-          }
+          value={parentOptions.find((o) => o.value === selectedParent) ?? null}
           onChange={(opt) => setValue("parent", opt?.value as string)}
           isError={!!errors.parent}
           errorText={errors.parent?.message as string}
@@ -272,7 +265,6 @@ const EditOrCreateCategory = ({ initialData, onClose }: Props) => {
         <AttributeBuilder
           control={control}
           register={register}
-          watch={watch}
           errors={errors}
           setValue={setValue}
         />

@@ -28,7 +28,6 @@ export const SendEmailForm: React.FC<{
   ];
 
   const onSubmit = (data: any) => {
-    console.log("Sending Email Payload:", data);
     onClose();
   };
 

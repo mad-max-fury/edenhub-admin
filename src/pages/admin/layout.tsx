@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 import {
   DashboardIcon,
@@ -12,6 +12,7 @@ import {
   AuditTrailIcon,
   UserManagementIcon,
 } from "@/assets/svgs";
+import { MessageSquare, RotateCcw } from "lucide-react";
 import type { MenuItem } from "@/components/sidebar/SideBar";
 import Sidebar from "@/components/sidebar/SideBar";
 import TopBar from "@/components/topbar/Topbar";
@@ -60,6 +61,13 @@ const AdminLayout = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Scroll the content area back to the top on every route change — the main
+  // element is the scroll container (overflow-auto), not the window.
+  const mainRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
 
   // Full nav with its gating permissions, then filtered to what the user can see.
   const menuItems: MenuItem[] = useMemo(() => {
@@ -114,6 +122,18 @@ const AdminLayout = () => {
         perms: [...AREA_PERMISSIONS.auditTrail],
       },
       {
+        name: "Messages",
+        icon: MessageSquare as unknown as typeof AuditTrailIcon,
+        path: AuthRouteConfig.MESSAGES,
+        perms: [...AREA_PERMISSIONS.auditTrail],
+      },
+      {
+        name: "Disputes",
+        icon: RotateCcw as unknown as typeof AuditTrailIcon,
+        path: AuthRouteConfig.DISPUTES,
+        perms: [...AREA_PERMISSIONS.orders],
+      },
+      {
         name: "Settings",
         icon: SettingsIcon,
         path: AuthRouteConfig.SETTINGS,
@@ -126,8 +146,7 @@ const AdminLayout = () => {
   }, [newOrders, canAny]);
 
   // First page the user is actually allowed to land on.
-  const firstAccessiblePath =
-    menuItems[0]?.path ?? AuthRouteConfig.SETTINGS;
+  const firstAccessiblePath = menuItems[0]?.path ?? AuthRouteConfig.SETTINGS;
 
   // Is the user allowed to view the page they're currently on?
   const isPathAllowed = canAny(requiredPermissionsForPath(location.pathname));
@@ -178,8 +197,7 @@ const AdminLayout = () => {
         .split(" ")
         .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
         .join(" ") || "User",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+    avatar: user?.profilePicture || "",
   };
 
   return (
@@ -208,13 +226,16 @@ const AdminLayout = () => {
         <TopBar
           breadcrumbs={generateBreadcrumbs()}
           searchPlaceholder="Search for anything here"
-          onSearch={(val) => console.log(val)}
+          onSearch={() => {}}
           notificationCount={2}
           onNotificationClick={() => {}}
           openDrawer={() => setOpenMenu(true)}
         />
 
-        <main className="flex-1 p-4 md:p-8 overflow-auto bg-N10 custom-scrollbar">
+        <main
+          ref={mainRef}
+          className="flex-1 p-4 md:p-8 overflow-auto bg-N10 custom-scrollbar"
+        >
           {isPathAllowed ? (
             <Outlet />
           ) : (

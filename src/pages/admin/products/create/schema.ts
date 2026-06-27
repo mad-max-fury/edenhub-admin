@@ -2,11 +2,22 @@ import * as yup from "yup";
 import type { ICategoryAttribute } from "./types";
 
 const makeAttrShape = (attributes: ICategoryAttribute[]) => {
-  const shape: Record<string, yup.StringSchema> = {};
+  const shape: Record<string, yup.Schema> = {};
   attributes.forEach((attr) => {
-    let rule = yup.string().trim().typeError(`${attr.name} must be text`);
-    if (attr.isRequired) rule = rule.required(`${attr.name} is required`);
-    shape[attr.id] = rule;
+    if (attr.isRequired) {
+      shape[attr.id] = yup
+        .string()
+        .trim()
+        .required(`${attr.name} is required`)
+        .typeError(`${attr.name} must be text`);
+    } else {
+      shape[attr.id] = yup
+        .string()
+        .trim()
+        .nullable()
+        .optional()
+        .typeError(`${attr.name} must be text`);
+    }
   });
   return shape;
 };
@@ -28,7 +39,7 @@ const discountFields = {
     .optional()
     .test("lt-base", "Must be less than base price", function (val) {
       const { basePrice } = this.parent;
-      if (val !== undefined && basePrice) return val < basePrice;
+      if (val !== undefined && val > 0 && basePrice) return val < basePrice;
       return true;
     }),
   discountStartDate: yup.string().optional(),
@@ -67,7 +78,12 @@ export const buildProductSchema = (attributes: ICategoryAttribute[] = []) => {
       .min(0)
       .integer(),
     pictures: yup.array().of(pictureShape).default([]),
-    attributes: yup.object().shape(attrShape).default({}),
+
+    attributes: yup.lazy(() =>
+      Object.keys(attrShape).length > 0
+        ? yup.object().shape(attrShape).default({})
+        : yup.object().default({}),
+    ),
     tags: yup.array().of(selectItemShape).default([]),
   });
 
@@ -107,6 +123,32 @@ export const buildProductSchema = (attributes: ICategoryAttribute[] = []) => {
         then: (s) =>
           s.required("Required").min(1).max(10).typeError("Must be a number"),
       }),
+    engravingAvailable: yup.boolean().required(),
+    engravingFee: yup
+      .number()
+      .optional()
+      .when("engravingAvailable", {
+        is: true,
+        then: (s) =>
+          s.required("Required").min(0).typeError("Must be a number"),
+      }),
+    engravingMaxCharacters: yup
+      .number()
+      .optional()
+      .when("engravingAvailable", {
+        is: true,
+        then: (s) =>
+          s.required("Required").min(1).max(200).typeError("Must be a number"),
+      }),
+    engravingMaxLines: yup
+      .number()
+      .optional()
+      .when("engravingAvailable", {
+        is: true,
+        then: (s) =>
+          s.required("Required").min(1).max(10).typeError("Must be a number"),
+      }),
+    engravingFonts: yup.string().optional(),
     weight: yup.string().optional(),
     tags: yup
       .array()
@@ -122,7 +164,11 @@ export const buildProductSchema = (attributes: ICategoryAttribute[] = []) => {
       .integer(),
     coverImage: yup.mixed().optional(),
     pictures: yup.array().of(pictureShape).default([]),
-    attributes: yup.object().shape(attrShape).default({}),
+    attributes: yup.lazy(() =>
+      Object.keys(attrShape).length > 0
+        ? yup.object().shape(attrShape).default({})
+        : yup.object().default({}),
+    ),
     variants: yup.array().of(variantSchema).default([]),
   });
 };

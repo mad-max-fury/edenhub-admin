@@ -8,6 +8,8 @@ import {
   MoreVertical,
   Archive,
   ArchiveRestore,
+  Boxes,
+  Layers,
 } from "lucide-react";
 
 export type ProductStatus = "active" | "archived" | "drafted";
@@ -27,6 +29,8 @@ export type ProductRow = {
 export interface ProductRowActions {
   onView: (p: ProductRow) => void;
   onEdit: (p: ProductRow) => void;
+  onUpdateStock: (p: ProductRow) => void;
+  onManageVariants: (p: ProductRow) => void;
   onArchive: (p: ProductRow) => void;
   onRestore: (p: ProductRow) => void;
   onDelete: (p: ProductRow) => void;
@@ -49,6 +53,16 @@ const ActionCell = ({
       name: "Edit Details",
       icon: <Edit size={14} />,
       onClick: () => actions.onEdit(product),
+    },
+    {
+      name: "Update Stock",
+      icon: <Boxes size={14} />,
+      onClick: () => actions.onUpdateStock(product),
+    },
+    {
+      name: "Manage Variants",
+      icon: <Layers size={14} />,
+      onClick: () => actions.onManageVariants(product),
     },
     product.status === "archived"
       ? {

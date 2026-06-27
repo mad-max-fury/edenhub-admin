@@ -7,6 +7,12 @@ import Select, {
   type OptionProps,
   type SingleValueProps,
 } from "react-select";
+import CreatableSelect from "react-select/creatable";
+
+const menuPortalTarget =
+  typeof document !== "undefined"
+    ? (document.getElementById("select-portal") ?? document.body)
+    : undefined;
 
 import { Avatar } from "../avatar";
 import { Typography } from "../typography";
@@ -41,119 +47,152 @@ interface SMSelectDropDownProps {
   flexStyle?: "col" | "row";
   isMulti?: boolean;
   name?: string;
+  creatable?: boolean;
+  isClearable?: boolean;
+  size?: "sm" | "md";
 }
 
 const selectStyles = ({
   isError,
   bgColor = false,
+  size = "md",
 }: {
   isError: boolean;
   bgColor?: boolean;
-}) => ({
-  input: (styles: any) => ({
-    ...styles,
-    "&:not(.aui-no-focusvisible) :focus-visible": {
+  size?: "sm" | "md";
+}) => {
+  const minHeight = size === "sm" ? "32px" : "40px";
+  const fontSize = size === "sm" ? "13px" : "14px";
+  return {
+    input: (styles: any) => ({
+      ...styles,
+      "&:not(.aui-no-focusvisible) :focus-visible": {
+        boxShadow: "none",
+        border: "none",
+      },
+    }),
+
+    menuPortal: (base: any) => ({
+      ...base,
+      zIndex: 9999,
+      pointerEvents: "auto",
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      overflowY: "auto",
+      scrollbarColor: "transparent",
+      scrollbarWidth: "thin",
+      "&::-webkit-scrollbar": {
+        width: "7px",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        backgroundColor: "transparent !important",
+        borderRadius: "2.5px",
+        height: "50px",
+      },
+      "&::-webkit-scrollbar-track": {
+        background: "transparent !important",
+        borderBottomRightRadius: "16px",
+      },
+      "&::-webkit-scrollbar-thumb, &::-webkit-scrollbar-track": {
+        background: "transparent",
+      },
+    }),
+    control: (
+      styles: any,
+      { isDisabled, isFocused }: { isDisabled: boolean; isFocused: boolean },
+    ) => ({
+      ...styles,
+      borderRadius: "4px",
+      outline: "none",
+      cursor: "pointer",
+      // Apply focused border at the top level, not just inside &:hover
+      border: isError
+        ? "1px solid var(--color-R400)"
+        : isFocused
+          ? "1px solid var(--color-BR400)"
+          : "1px solid var(--color-N40)",
+      // Kill react-select's default blue box-shadow focus ring
       boxShadow: "none",
-      border: "none",
-    },
-  }),
-  menu: (provided: any) => ({
-    ...provided,
-    overflowY: "auto",
-    scrollbarColor: "transparent",
-    scrollbarWidth: "thin",
-    "&::-webkit-scrollbar": {
-      width: "7px",
-    },
-    "&::-webkit-scrollbar-thumb": {
-      backgroundColor: "transparent !important",
-      borderRadius: "2.5px",
-      height: "50px",
-    },
-    "&::-webkit-scrollbar-track": {
-      background: "transparent !important",
-      borderBottomRightRadius: "16px",
-    },
-    "&::-webkit-scrollbar-thumb, &::-webkit-scrollbar-track": {
-      background: "transparent",
-    },
-  }),
-  control: (
-    styles: any,
-    { isDisabled, isFocused }: { isDisabled: boolean; isFocused: boolean },
-  ) => ({
-    ...styles,
-    borderRadius: "4px",
-    outline: "none",
-    cursor: "pointer",
-    border: `1px solid ${isError ? "red" : "#dfe1e6"}`,
-    minHeight: "40px",
-    width: "100%",
-    color: isDisabled ? "#97a0af" : "#97a0af",
-    backgroundColor: isDisabled || bgColor ? "#f4f5f7" : "#ffffff",
-    "&:hover": {
-      border: isFocused
-        ? "1px solid #0052CC"
-        : isError
-          ? "1px solid red"
-          : "1px solid #dfe1e6",
-    },
-  }),
-  option: (
-    styles: any,
-    {
-      isDisabled,
-      isFocused,
-      isSelected,
-    }: { isDisabled: boolean; isFocused: boolean; isSelected: boolean },
-  ) => ({
-    ...styles,
-    fontSize: "14px",
-    fontWeight: 400,
-    lineHeight: "20px",
-    cursor: "pointer",
-    color: isDisabled ? "#97a0af" : "#172B4D",
-    textWrap: "nowrap",
-    whiteSpace: "wrap",
-    backgroundColor: isDisabled
-      ? "#f4f5f7"
-      : isSelected
-        ? "#EBECF0"
-        : "#ffffff",
-    "&:hover": {
-      backgroundColor: isSelected ? "#EBECF0" : "#DFE1E6",
-    },
-  }),
-  placeholder: (styles: any) => ({
-    ...styles,
-    fontSize: "14px",
-    fontWeight: 400,
-    lineHeight: "20px",
-    color: "#97a0af",
-  }),
-  valueContainer: (styles: any) => ({
-    ...styles,
-    borderLeft: "none",
-    fontSize: "14px",
-    minHeight: "40px",
-  }),
-  indicatorSeparator: (styles: any) => ({
-    ...styles,
-    display: "none",
-    fontSize: "14px",
-  }),
-  dropdownIndicator: (styles: any) => ({
-    ...styles,
-    color: "#42526E",
-    fontSize: "14px",
-  }),
-  autosizeInput: (styles: any) => ({
-    ...styles,
-    "&:not(.aui-no-focusvisible) :focus-visible": {
-      boxShadow: "none",
-    },
-  }),
-});
+      minHeight,
+      fontSize,
+      width: "100%",
+      color: "var(--color-N80)",
+      backgroundColor:
+        isDisabled || bgColor ? "var(--color-N20)" : "var(--color-N0)",
+      "&:hover": {
+        border: isError
+          ? "1px solid var(--color-R400)"
+          : "1px solid var(--color-BR400)",
+        boxShadow: "none",
+      },
+    }),
+    option: (
+      styles: any,
+      {
+        isDisabled,
+        isFocused,
+        isSelected,
+      }: { isDisabled: boolean; isFocused: boolean; isSelected: boolean },
+    ) => ({
+      ...styles,
+      fontSize: "14px",
+      fontWeight: 400,
+      lineHeight: "20px",
+      cursor: "pointer",
+      // Selected: brown text; disabled: muted; default: dark
+      color: isDisabled
+        ? "var(--color-N80)"
+        : isSelected
+          ? "var(--color-BR500)"
+          : "var(--color-N800)",
+      textWrap: "nowrap",
+      whiteSpace: "wrap",
+      // Selected: light brown bg; disabled: light grey; default: white
+      backgroundColor: isDisabled
+        ? "var(--color-N20)"
+        : isSelected
+          ? "var(--color-LB75)"
+          : "var(--color-N0)",
+      "&:hover": {
+        // Hover: very light brown; keep selected bg consistent
+        backgroundColor: isSelected ? "var(--color-LB75)" : "var(--color-LB50)",
+        color: isDisabled ? "var(--color-N80)" : "var(--color-BR500)",
+      },
+    }),
+    placeholder: (styles: any) => ({
+      ...styles,
+      fontSize,
+      fontWeight: 400,
+      lineHeight: "20px",
+      color: "var(--color-N80)",
+    }),
+    valueContainer: (styles: any) => ({
+      ...styles,
+      borderLeft: "none",
+      fontSize,
+      minHeight,
+      padding: size === "sm" ? "0 6px" : "2px 8px",
+    }),
+    indicatorSeparator: (styles: any) => ({
+      ...styles,
+      display: "none",
+      fontSize,
+    }),
+    dropdownIndicator: (styles: any) => ({
+      ...styles,
+      color: "var(--color-N500)",
+      fontSize,
+      padding: size === "sm" ? "4px" : "8px",
+    }),
+    autosizeInput: (styles: any) => ({
+      ...styles,
+      "&:not(.aui-no-focusvisible) :focus-visible": {
+        boxShadow: "none",
+      },
+    }),
+  };
+};
 
 export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
   (
@@ -181,9 +220,14 @@ export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
       field,
       isMulti = false,
       name,
+      creatable = false,
+      isClearable = false,
+      size = "md",
     },
     ref,
   ) => {
+    const SelectComp: any = creatable ? CreatableSelect : Select;
+
     const handleChange = async (value: OptionType) => {
       const awaitedValue = await value;
       onChange(awaitedValue);
@@ -199,7 +243,6 @@ export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
               size={"sm"}
             />
           )}
-
           <span className="whitespace-nowrap">{props.data.label}</span>
         </div>
       </components.Option>
@@ -239,7 +282,7 @@ export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
           </Typography>
         )}
         <div className={`${flexStyle === "row" && "col-span-9"}`}>
-          <Select
+          <SelectComp
             ref={ref}
             options={options}
             onChange={handleChange}
@@ -250,10 +293,13 @@ export const SMSelectDropDown = forwardRef<any, SMSelectDropDownProps>(
             defaultInputValue={defaultInputValue}
             defaultValue={defaultValue}
             isSearchable={searchable}
+            isClearable={isClearable}
             id={id}
             name={name}
             isMulti={isMulti}
-            styles={selectStyles({ isError, bgColor })}
+            menuPortalTarget={menuPortalTarget}
+            menuPosition="fixed"
+            styles={selectStyles({ isError, bgColor, size })}
             components={
               varient === "simple"
                 ? {}

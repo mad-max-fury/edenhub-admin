@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  useFormContext,
-  useFieldArray,
-  Controller,
-} from "react-hook-form";
+import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import { ChevronDown, Trash2 } from "lucide-react";
 
 import type {
@@ -71,49 +67,93 @@ const VariantForm = ({ index, categoryAttributes, onRemove }: Props) => {
       {open && (
         <div className="p-4 flex flex-col gap-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Variant Name"
-              required
-              registration={register(`variants.${index}.name`)}
-              error={variantErrors?.name?.message}
-              placeholder="e.g. Black / 42mm"
+            {/* Replace the old Variant Name FormField with this: */}
+            <Controller
+              control={control}
+              name={`variants.${index}.name`}
+              render={({ field }) => (
+                <FormField
+                  label="Variant Name"
+                  required
+                  placeholder="e.g. Black / 42mm"
+                  error={variantErrors?.name?.message}
+                  // @ts-expect-error
+                  registration={field}
+                />
+              )}
             />
-            <FormField
-              label="Base Price"
-              required
-              type="number"
-              min={0}
-              prefix="₦"
-              registration={register(`variants.${index}.basePrice`, {
-                valueAsNumber: true,
-              })}
-              error={variantErrors?.basePrice?.message}
-              placeholder="0"
+            <Controller
+              control={control}
+              name={`variants.${index}.basePrice`}
+              render={({ field }) => (
+                <FormField
+                  label="Base Price"
+                  required
+                  type="number"
+                  min={0}
+                  prefix="₦"
+                  // We spread the field object to map name, ref, onBlur, and value
+                  // and override onChange to handle the empty string correctly
+                  registration={{
+                    ...field,
+                    // @ts-expect-error
+                    onChange: (e) => {
+                      const val = e.target.value;
+                      field.onChange(val === "" ? undefined : Number(val));
+                    },
+                  }}
+                  error={variantErrors?.basePrice?.message}
+                  placeholder="0"
+                />
+              )}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Stock Quantity"
-              required
-              type="number"
-              min={0}
-              registration={register(`variants.${index}.quantity`, {
-                valueAsNumber: true,
-              })}
-              error={variantErrors?.quantity?.message}
-              placeholder="0"
+            <Controller
+              control={control}
+              name={`variants.${index}.quantity`}
+              render={({ field }) => (
+                <FormField
+                  label="Stock Quantity"
+                  required
+                  type="number"
+                  min={0}
+                  registration={{
+                    ...field,
+                    // @ts-expect-error
+                    onChange: (e) => {
+                      const val = e.target.value;
+                      field.onChange(val === "" ? undefined : Number(val));
+                    },
+                  }}
+                  error={variantErrors?.quantity?.message}
+                  placeholder="0"
+                />
+              )}
             />
-            <FormField
-              label="Discount %"
-              type="number"
-              min={0}
-              max={100}
-              registration={register(`variants.${index}.discountPercentage`, {
-                valueAsNumber: true,
-              })}
-              error={variantErrors?.discountPercentage?.message}
-              placeholder="0"
+            <Controller
+              control={control}
+              name={`variants.${index}.discountPercentage`}
+              render={({ field }) => (
+                <FormField
+                  label="Discount %"
+                  type="number"
+                  min={0}
+                  max={100}
+                  registration={{
+                    ...field,
+                    // @ts-expect-error
+                    onChange: (e) => {
+                      const val = e.target.value;
+                      // Prevents NaN. If the user clears the input, it becomes undefined.
+                      field.onChange(val === "" ? undefined : Number(val));
+                    },
+                  }}
+                  error={variantErrors?.discountPercentage?.message}
+                  placeholder="0"
+                />
+              )}
             />
           </div>
 

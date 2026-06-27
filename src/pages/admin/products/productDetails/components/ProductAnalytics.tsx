@@ -9,7 +9,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { Typography } from "@/components";
+import { Typography, SMSelectDropDown } from "@/components";
 import {
   useGetProductAnalyticsQuery,
   type AnalyticsRange,
@@ -54,17 +54,14 @@ export const ProductAnalytics = ({ productId }: { productId: string }) => {
             Analytics
           </Typography>
         </div>
-        <select
-          value={range}
-          onChange={(e) => setRange(e.target.value as AnalyticsRange)}
-          className="border border-N40 rounded-md px-2 py-1 text-xs bg-white"
-        >
-          {RANGES.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
+        <div className="w-40">
+          <SMSelectDropDown
+            size="sm"
+            options={RANGES}
+            value={RANGES.find((r) => r.value === range) ?? null}
+            onChange={(opt) => setRange(opt.value as AnalyticsRange)}
+          />
+        </div>
       </div>
 
       <div className="p-5 flex flex-col gap-4">

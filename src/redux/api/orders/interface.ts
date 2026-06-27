@@ -29,10 +29,14 @@ export interface IOrderItem {
 }
 
 export interface IOrderAddress {
-  fullName: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
   phone?: string;
+  additionalPhone?: string;
   email?: string;
   address: string;
+  landmark?: string;
   city: string;
   state: string;
   country: string;
@@ -96,6 +100,7 @@ export interface IOrderListQuery {
   paymentStatus?: string;
   fulfillmentStatus?: string;
   customer?: string;
+  product?: string;
 }
 
 export interface IOrderStats {

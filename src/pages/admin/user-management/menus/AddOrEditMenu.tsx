@@ -98,6 +98,7 @@ export const AddOrEditMenu = ({ closeModal, editData }: IAddOrEditProps) => {
           Cancel
         </Button>
         <Button
+          type="submit"
           variant={"primary"}
           className="msm:w-full"
           loading={isLoading || isUpdating}

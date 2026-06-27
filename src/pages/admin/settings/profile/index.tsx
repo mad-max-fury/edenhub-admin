@@ -53,9 +53,18 @@ const ProfileSettings = () => {
 
   const onSubmit = async (data: IProfilePayload) => {
     try {
+      // Map form fields to API field names (phone → phoneNumber). Email is
+      // read-only, so it is intentionally not sent.
       const response = await updateUser({
         id: user?._id || "",
-        user: data,
+        user: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phoneNumber: data.phone,
+          country: data.country,
+          state: data.state,
+          city: data.city,
+        },
       }).unwrap();
 
       dispatch(updateUserAction(response.data.data));

@@ -1,8 +1,14 @@
 import type { ReactNode } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
+import { TextField } from "@/components";
 
-const inputCls =
-  "w-full px-3.5 py-2.5 rounded-lg border border-N40 text-sm bg-white focus:outline-none focus:border-B200 focus:ring-2 focus:ring-B200/20 transition-all duration-150 placeholder:text-N60 disabled:bg-N20 disabled:cursor-not-allowed disabled:text-N70";
+// A label node with the required asterisk, fed to TextField's `label` prop.
+const labelNode = (label: string, required?: boolean): ReactNode => (
+  <>
+    {label}
+    {required && <span className="text-R400 ml-0.5">*</span>}
+  </>
+);
 
 // ─── FormSection ──────────────────────────────────────────────────────────────
 export const FormSection = ({
@@ -22,7 +28,7 @@ export const FormSection = ({
     <div className="px-5 py-4 border-b border-N20 bg-N10/50 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
         {icon && (
-          <span className="w-8 h-8 rounded-lg bg-B50 text-B400 flex items-center justify-center shrink-0">
+          <span className="w-8 h-8 rounded-lg bg-BR50 text-white flex items-center justify-center shrink-0">
             {icon}
           </span>
         )}
@@ -37,21 +43,10 @@ export const FormSection = ({
   </section>
 );
 
-// ─── Label ────────────────────────────────────────────────────────────────────
-const FieldLabel = ({
-  label,
-  required,
-}: {
-  label: string;
-  required?: boolean;
-}) => (
-  <label className="text-sm font-medium text-N700">
-    {label}
-    {required && <span className="text-R400 ml-0.5">*</span>}
-  </label>
-);
-
 // ─── FormField ────────────────────────────────────────────────────────────────
+// Thin adapter over the design-system TextField for react-hook-form fields.
+// Accepts a pre-built `registration` (so callers keep valueAsNumber etc.) and
+// adds the required asterisk / hint / suffix conveniences.
 interface FormFieldProps {
   label: string;
   registration: UseFormRegisterReturn;
@@ -80,39 +75,28 @@ export const FormField = ({
   prefix,
   suffix,
   disabled,
-}: FormFieldProps) => (
-  <div className="flex flex-col gap-1.5">
-    <FieldLabel label={label} required={required} />
-    <div className="relative">
-      {prefix && (
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-N400 pointer-events-none select-none">
-          {prefix}
-        </span>
-      )}
-      <input
-        {...registration}
-        type={type}
-        min={min}
-        max={max}
-        disabled={disabled}
-        placeholder={placeholder}
-        className={`${inputCls} ${prefix ? "pl-8" : ""} ${suffix ? "pr-16" : ""} ${
-          error ? "border-R400 focus:border-R400 focus:ring-R400/20" : ""
-        }`}
-      />
-      {suffix && (
-        <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-N400 pointer-events-none select-none">
-          {suffix}
-        </span>
-      )}
-    </div>
-    {error ? (
-      <p className="text-xs text-R400">{error}</p>
-    ) : hint ? (
-      <p className="text-xs text-N400">{hint}</p>
-    ) : null}
-  </div>
-);
+}: FormFieldProps) => {
+  const adornment = suffix ?? prefix;
+  return (
+    <TextField
+      {...registration}
+      label={labelNode(label, required)}
+      labelSubText={!error ? hint : undefined}
+      type={type}
+      min={min}
+      max={max}
+      disabled={disabled}
+      placeholder={placeholder}
+      error={!!error}
+      errorText={error ?? ""}
+      icon={
+        adornment ? (
+          <span className="text-sm text-N400 select-none">{adornment}</span>
+        ) : undefined
+      }
+    />
+  );
+};
 
 // ─── FormTextarea ─────────────────────────────────────────────────────────────
 export const FormTextarea = ({
@@ -120,7 +104,6 @@ export const FormTextarea = ({
   registration,
   required,
   error,
-  rows = 4,
   placeholder,
 }: {
   label: string;
@@ -130,18 +113,14 @@ export const FormTextarea = ({
   rows?: number;
   placeholder?: string;
 }) => (
-  <div className="flex flex-col gap-1.5">
-    <FieldLabel label={label} required={required} />
-    <textarea
-      {...registration}
-      rows={rows}
-      placeholder={placeholder}
-      className={`${inputCls} resize-y ${
-        error ? "border-R400 focus:border-R400 focus:ring-R400/20" : ""
-      }`}
-    />
-    {error && <p className="text-xs text-R400">{error}</p>}
-  </div>
+  <TextField
+    {...registration}
+    inputType="textarea"
+    label={labelNode(label, required)}
+    placeholder={placeholder}
+    error={!!error}
+    errorText={error ?? ""}
+  />
 );
 
 // ─── YesNoToggle ──────────────────────────────────────────────────────────────

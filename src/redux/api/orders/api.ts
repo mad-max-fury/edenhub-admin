@@ -139,6 +139,22 @@ export const orderApi = baseApi.injectEndpoints({
         { type: tagTypes.GET_ORDER_STATS },
       ],
     }),
+
+    reconcilePending: builder.mutation<
+      IResponse<{
+        checked: number;
+        paid: number;
+        cancelled: number;
+        untouched: number;
+      }>,
+      void
+    >({
+      query: () => ({ url: `${baseName}/reconcile-pending`, method: "POST" }),
+      invalidatesTags: [
+        { type: tagTypes.GET_ORDERS },
+        { type: tagTypes.GET_ORDER_STATS },
+      ],
+    }),
   }),
 });
 
@@ -154,4 +170,5 @@ export const {
   useShipOrderMutation,
   useTrackOrderMutation,
   useCancelOrderMutation,
+  useReconcilePendingMutation,
 } = orderApi;
