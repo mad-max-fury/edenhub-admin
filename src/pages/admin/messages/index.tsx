@@ -80,7 +80,8 @@ const ChatPanel = ({ conversationId }: { conversationId: string }) => {
   if (isLoading || !conversation) return <div className="text-N400 py-12 text-center">Loading…</div>;
 
   const customer = conversation.customer;
-  const customerName = `${customer.firstName} ${customer.lastName}`;
+  if (!customer) return <div className="text-N400 py-12 text-center">Customer not found</div>;
+  const customerName = `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || "Customer";
 
   return (
     <div className="flex flex-col h-full">
@@ -126,7 +127,7 @@ const AdminMessagesPage = () => {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [findOrCreate] = useLazyFindOrCreateConversationQuery();
 
-  const allCustomers = (customersData?.data?.data ?? []).filter((u) => !u.staffId);
+  const allCustomers = (customersData?.data?.data ?? []).filter((u) => u && !u.staffId);
 
   useEffect(() => {
     if (!socket) return;
@@ -150,7 +151,7 @@ const AdminMessagesPage = () => {
   const filtered = search.trim()
     ? allCustomers.filter((c) => {
         const q = search.toLowerCase();
-        return `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+        return `${c.firstName || ""} ${c.lastName || ""}`.toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q);
       })
     : allCustomers;
 
@@ -158,7 +159,7 @@ const AdminMessagesPage = () => {
     const aOn = onlineIds.has(a._id) ? 1 : 0;
     const bOn = onlineIds.has(b._id) ? 1 : 0;
     if (aOn !== bOn) return bOn - aOn;
-    return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+    return `${a.firstName || ""} ${a.lastName || ""}`.localeCompare(`${b.firstName || ""} ${b.lastName || ""}`);
   });
 
   if (isLoading)
@@ -187,7 +188,7 @@ const AdminMessagesPage = () => {
               <div className="text-center py-12 text-sm text-N400">No customers found</div>
             ) : (
               sorted.map((c) => {
-                const name = `${c.firstName} ${c.lastName}`;
+                const name = `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Customer";
                 const isOnline = onlineIds.has(c._id);
                 const active = selectedCustomerId === c._id;
                 return (
