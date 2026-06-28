@@ -8,7 +8,7 @@ import { AuthRouteConfig } from "@/constants/routes";
 const money = (n?: number) => `₦${Number(n ?? 0).toLocaleString()}`;
 
 const customerName = (c: IOrder["customer"]) =>
-  typeof c === "string" || !c ? "—" : `${c.firstName} ${c.lastName}`;
+  !c || typeof c === "string" ? "—" : `${c.firstName || ""} ${c.lastName || ""}`.trim() || "—";
 
 // Orders that contain this product, shown on the product detail page.
 export const ProductOrders = ({ productId }: { productId: string }) => {

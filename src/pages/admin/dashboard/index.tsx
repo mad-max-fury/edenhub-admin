@@ -27,7 +27,7 @@ const PERIODS = [
 ];
 
 const customerName = (c: IOrder["customer"]) =>
-  typeof c === "string" ? "—" : `${c.firstName} ${c.lastName}`;
+  !c || typeof c === "string" ? "—" : `${c.firstName || ""} ${c.lastName || ""}`.trim() || "—";
 
 const Dashboard = () => {
   const navigate = useNavigate();
