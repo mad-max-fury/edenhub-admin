@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { lazy, Suspense, type ComponentType } from "react";
 
 import NotFound from "@/pages/notFound/NotFound";
+import ErrorPage from "@/pages/error/ErrorPage";
 import { PageLoader } from "@/components";
 import ProtectedRouteLayout from "@/pages/admin/RouteGuard";
 import PublicRouteLayout from "@/pages/admin/PublicRouteGuard";
@@ -56,6 +57,7 @@ const SecuritySettings = lazy(() => import("@/pages/admin/settings/security"));
 const AdsSettings = lazy(() => import("@/pages/admin/settings/ads"));
 const ReviewSettings = lazy(() => import("@/pages/admin/settings/reviews"));
 const FaqSettings = lazy(() => import("@/pages/admin/settings/faqs"));
+const ShippingSettings = lazy(() => import("@/pages/admin/settings/shipping"));
 const Messages = lazy(() => import("@/pages/admin/messages"));
 const Disputes = lazy(() => import("@/pages/admin/disputes"));
 const withSuspense = (Component: ComponentType) => (
@@ -68,6 +70,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <PublicRouteLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: withSuspense(LoginPage) },
       { path: "forgot-password", element: withSuspense(ForgotPasswordPage) },
@@ -82,6 +85,7 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: <ProtectedRouteLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         element: withSuspense(AdminLayout),
@@ -137,6 +141,7 @@ export const router = createBrowserRouter([
                 path: "notifications",
                 element: withSuspense(NotificationSettings),
               },
+              { path: "shipping", element: withSuspense(ShippingSettings) },
               { path: "ads", element: withSuspense(AdsSettings) },
               { path: "reviews", element: withSuspense(ReviewSettings) },
               { path: "faqs", element: withSuspense(FaqSettings) },

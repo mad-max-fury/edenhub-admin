@@ -8,6 +8,7 @@ import {
   Megaphone,
   Star,
   HelpCircle,
+  Truck,
 } from "lucide-react";
 
 const SettingsLayout = () => {
@@ -15,6 +16,7 @@ const SettingsLayout = () => {
     { label: "Profile", path: "profile", icon: <User size={18} /> },
     { label: "Security", path: "security", icon: <ShieldCheck size={18} /> },
     { label: "Notifications", path: "notifications", icon: <Bell size={18} /> },
+    { label: "Shipping", path: "shipping", icon: <Truck size={18} /> },
     { label: "Ads & Campaigns", path: "ads", icon: <Megaphone size={18} /> },
     { label: "Shop Reviews", path: "reviews", icon: <Star size={18} /> },
     { label: "FAQs", path: "faqs", icon: <HelpCircle size={18} /> },
