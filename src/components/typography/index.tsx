@@ -201,7 +201,7 @@ function Typography(props: TypographyProps) {
       })}
       {...rest}
     >
-      {children}
+      {children as any}
     </Tag>
   );
 }
